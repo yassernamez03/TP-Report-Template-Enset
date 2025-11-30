@@ -1,0 +1,113 @@
+\documentclass{rapportENSET}
+
+% Encoding + language
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+
+% Core packages
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{geometry}
+\usepackage{amsmath, amssymb}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{tikz}
+\usepackage{tcolorbox}
+\usepackage{caption}
+\usepackage{pifont}
+\usepackage{listings}
+\usepackage{minted}
+
+% -----------------------------------------------------------
+% Colors
+% -----------------------------------------------------------
+
+\definecolor{winblue}{RGB}{0,120,215}
+\definecolor{lightgray}{RGB}{240,240,240}
+
+\definecolor{javared}{rgb}{0.6,0,0}
+\definecolor{javagreen}{rgb}{0.25,0.5,0.35}
+\definecolor{javapurple}{rgb}{0.5,0,0.35}
+\definecolor{javadocblue}{rgb}{0.25,0.35,0.75}
+\definecolor{codebackground}{rgb}{0.95,0.95,0.92}
+
+\definecolor{bg}{rgb}{0.95,0.95,0.95} % background for custom boxes
+
+% -----------------------------------------------------------
+% Custom item bullets
+% -----------------------------------------------------------
+
+\newcommand{\bulletpoint}{\textcolor{winblue}{\textbullet}}
+\newcommand{\crossmark}{\textcolor{javared}{\ding{55}}}
+\newcommand{\arrowpoint}{\textcolor{winblue}{\ding{226}}}
+
+\renewcommand{\labelitemi}{\bulletpoint}
+\renewcommand{\labelitemii}{\arrowpoint}
+\renewcommand{\labelitemiii}{\checkmark}
+
+% -----------------------------------------------------------
+% Listings configuration (final merged version)
+% -----------------------------------------------------------
+
+\lstset{
+    language=Java,
+    basicstyle=\ttfamily\small,
+    keywordstyle=\color{javapurple}\bfseries,
+    stringstyle=\color{javared},
+    commentstyle=\color{javagreen},
+    morecomment=[s][\color{javadocblue}]{/**}{*/},
+    numbers=left,
+    numberstyle=\tiny\color{black},
+    stepnumber=1,
+    numbersep=10pt,
+    tabsize=4,
+    showspaces=false,
+    showstringspaces=false,
+    backgroundcolor=\color{codebackground},
+    frame=single,
+    captionpos=b,
+    breaklines=true,
+    breakatwhitespace=false,
+    escapeinside={(*@}{@*)}
+}
+
+% -----------------------------------------------------------
+% Manual French accents (kept for compatibility)
+% -----------------------------------------------------------
+
+\newcommand{\eacute}{\'{e}}
+\newcommand{\egrave}{\`{e}}
+\newcommand{\ecirc}{\^{e}}
+\newcommand{\ccedil}{\c{c}}
+\newcommand{\agrave}{\`{a}}
+\newcommand{\acirc}{\^{a}}
+\newcommand{\icirc}{\^{i}}
+\newcommand{\ocirc}{\^{o}}
+\newcommand{\ucirc}{\^{u}}
+\newcommand{\Eacute}{\'{E}}
+\newcommand{\Ccedil}{\c{C}}
+
+% -----------------------------------------------------------
+
+\title{Rapport Enset - Template}
+
+\begin{document}
+
+%----------- Informations du rapport ---------
+
+\titre{Titre} 
+\sujet{Module : }
+\enseignant{M. x \textsc{x}}
+\eleves{x \textsc{x}}
+
+%----------- Initialisation -------------------
+
+\fairemarges
+\fairepagedegarde
+\tabledematieres
+
+%------------ Corps du rapport ----------------
+
+\end{document}
