@@ -99,6 +99,7 @@
 
 \titre{TD1 : Diagramme de cas d'utilisation} 
 \sujet{Module : Conception Orienté Objet}
+
 \enseignant{Mme. Sara \textsc{RETAL}}
 \eleves{Yasser \textsc{Namez}}
 
@@ -112,5 +113,134 @@
 
 
 \section{Exercice 1}
+
+\subsection*{Description des éléments d'un diagramme de cas d'utilisation}
+
+Un diagramme de cas d'utilisation UML est composé des éléments suivants :
+
+\begin{itemize}[label=\textbullet]
+    \item \textbf{Acteurs} : Représentés par des pictogrammes (bonhommes), ils désignent les utilisateurs ou systèmes externes qui interagissent avec le système.
+    \item \textbf{Cas d'utilisation} : Représentés par des ellipses, ils décrivent les fonctionnalités du système.
+    \item \textbf{Frontière du système} : Rectangle qui délimite le périmètre du système étudié.
+    \item \textbf{Relations} :
+    \begin{itemize}[label=\textasciimacron]
+        \item \textit{Association} : Ligne simple entre acteur et cas d'utilisation
+        \item \textit{Include} : Relation de dépendance obligatoire (flèche pointillée)
+        \item \textit{Extend} : Relation de dépendance optionnelle (flèche pointillée)
+        \item \textit{Généralisation} : Héritage entre acteurs ou cas d'utilisation (flèche pleine)
+    \end{itemize}
+\end{itemize}
+
+\section{Exercice 2 : Système de gestion des notes}
+\begin{itemize}[label=\textbullet]
+    \item \textbf{Acteur pour la saisie des notes :} \emph{Enseignant}.  
+    Cas d'utilisation : \emph{Saisir notes}.
+    
+    \item \textbf{Consultation des notes par les enseignants :}  
+    Cas d'utilisation supplémentaires :  
+    \begin{itemize}[label=\textasciimacron]
+        \item \emph{Consulter notes par examen}
+        \item \emph{Consulter notes par élève}
+    \end{itemize}
+
+    \item \textbf{Directeur :} ce n'est pas un nouvel acteur.  
+    Le directeur est un \emph{spécialisation de l'acteur Enseignant}.
+
+    \item \textbf{Parent :} c'est un \emph{nouvel acteur}.  
+    Cas d'utilisation : \emph{Consulter notes de son enfant}.
+
+    \item \textbf{Édition et impression des notes par le directeur :}  
+    Cas d'utilisation à ajouter :  
+    \begin{itemize}[label=\textbullet]
+        \item \emph{Éditer notes par matière}
+        \item \emph{Éditer notes par classe ou niveau}
+        \item \emph{Éditer bulletin semestriel}
+        \item \emph{Imprimer bulletin}
+    \end{itemize}
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{UseCaseDiagram1.png}
+\caption{Diagramme de cas d'utilisation n°1}
+\label{fig:usecase1}
+\end{figure}
+
+\section{Exercice 3 : Système de bibliothèque}
+
+\begin{enumerate}
+    \item Un abonné ne peut emprunter que 3 livres, 3 CD et 2 revues simultanément.
+    \item Un abonné ne peut réserver si des documents ne sont pas rendus dans les délais (2 semaines).
+    \item Réservation annulée si documents non récupérés sous 24h.
+    \item La bibliothécaire vérifie le numéro d'abonné et enregistre le prêt.
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{UseCaseDiagram2.png}
+\caption{Diagramme de cas d'utilisation n°2}
+\label{fig:usecase2}
+\end{figure}
+
+\section{Étude de Cas 1 : GAB (Guichet Automatique Bancaire)}
+
+\subsection{Définition du système}
+Système de Guichet Automatique Bancaire permettant aux porteurs de cartes bancaires d'effectuer des opérations bancaires automatisées 24h/24.
+
+\subsection{Liste des acteurs}
+\begin{itemize}[label=\textbullet]
+    \item \textbf{Porteur de carte visa} : Client avec carte bancaire internationale
+    \item \textbf{Porteur de carte de la banque} : Client avec carte de crédit de la banque
+    \item \textbf{Technicien de maintenance} : Personnel technique
+    \item \textbf{Système d'autorisation inter-banque} : Acteur secondaire
+    \item \textbf{Système d'Information de la banque} : Acteur secondaire
+\end{itemize}
+
+\subsection{3. Diagramme de cas d'utilisation}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{UseCaseDiagram3.png}
+\caption{Diagramme de cas d'utilisation n°3}
+\label{fig:usecase3}
+\end{figure}
+
+\section{Étude de Cas 2 : Caisse de supermarché}
+
+\subsection{Acteurs}
+\begin{itemize}[label=\textbullet]
+    \item \textbf{Caissier} : Opérateur de la caisse
+    \item \textbf{Client} : Personne effectuant l'achat
+    \item \textbf{Système d'autorisation bancaire} : Acteur secondaire pour paiement carte
+\end{itemize}
+
+\subsection{Diagramme de cas d'utilisation}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{UseCaseDiagram4.png}
+\caption{Diagramme de cas d'utilisation n°4}
+\label{fig:usecase4}
+\end{figure}
+
+\section{Étude de Cas 3 : Gestion de bibliothèque}
+
+\subsection{Acteurs}
+\begin{itemize}[label=\textbullet]
+    \item \textbf{Acheteur} : Service des achats d'exemplaires
+    \item \textbf{Responsable inscription} : Gère l'inscription des emprunteurs
+    \item \textbf{Responsable prêts} : Enregistre les emprunts
+    \item \textbf{Responsable retours} : Gère les retours et relances
+    \item \textbf{Emprunteur} : Utilisateur de la bibliothèque
+    \item \textbf{Éditeur} : Acteur secondaire (fournisseur)
+\end{itemize}
+
+\subsection{Diagramme de cas d'utilisation}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{UseCaseDiagram5.png}
+\caption{Diagramme de cas d'utilisation n°5}
+\label{fig:usecase5}
+\end{figure}
 
 \end{document}

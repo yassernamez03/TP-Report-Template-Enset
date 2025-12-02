@@ -49,8 +49,12 @@
 \ThisLRCornerWallPaper{1}{logos/background.png}
 	\centering %Centraliser le contenu
 	\includegraphics[width=0.5\textwidth]{logos/enset.png}\par\vspace{1cm} %Insertion du logo
-	{\scshape\LARGE École Normale Supérieure de l'Enseignement Technique - Mohammedia \par} %Nom de l'université
-	\vspace{1.5cm}%Espace de 1,5cm
+	{\scshape\LARGE École Normale Supérieure de l'Enseignement Technique - Mohammedia \par}%Nom de l'université
+	\vspace{1cm}%Espace de 1,5cm
+	{\large Department of Information and Mathematics}\\
+	\vspace{0.5cm}%Espace de 0,5cm
+	{\large \bfseries{IT Engineering, Cybersecurity and Digital Trust engineering} \\ }
+	\vspace{1cm}%Espace de 1,5cm
 	{\scshape\Large \UE \\ \sujet \par} %sous-titre
 	\vspace{1cm}%Espace de 1cm
     \rule{\linewidth}{0.2 mm} \\[0.4 cm]

@@ -1,2 +1,14 @@
 \babel@toc {french}{}\relax 
 \contentsline {section}{\numberline {1}Exercice 1}{2}{section.1}%
+\contentsline {section}{\numberline {2}Exercice 2 : Système de gestion des notes}{2}{section.2}%
+\contentsline {section}{\numberline {3}Exercice 3 : Système de bibliothèque}{3}{section.3}%
+\contentsline {section}{\numberline {4}Étude de Cas 1 : GAB (Guichet Automatique Bancaire)}{3}{section.4}%
+\contentsline {subsection}{\numberline {4.1}Définition du système}{3}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}Liste des acteurs}{3}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}3. Diagramme de cas d'utilisation}{4}{subsection.4.3}%
+\contentsline {section}{\numberline {5}Étude de Cas 2 : Caisse de supermarché}{4}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Acteurs}{4}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}Diagramme de cas d'utilisation}{4}{subsection.5.2}%
+\contentsline {section}{\numberline {6}Étude de Cas 3 : Gestion de bibliothèque}{5}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Acteurs}{5}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Diagramme de cas d'utilisation}{5}{subsection.6.2}%
