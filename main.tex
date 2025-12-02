@@ -97,10 +97,10 @@
 
 %----------- Informations du rapport ---------
 
-\titre{TD1 : Diagramme de cas d'utilisation} 
-\sujet{Module : Conception Orienté Objet}
+\titre{TP4 - Mise en place de Docker et Cockpit sur une instance Ubuntu EC2} 
+\sujet{Module : Virtualisation et Cloud computing}
 
-\enseignant{Mme. Sara \textsc{RETAL}}
+\enseignant{Pr. Azeddine \textsc{KHIAT}}
 \eleves{Yasser \textsc{Namez}}
 
 %----------- Initialisation -------------------
@@ -111,136 +111,170 @@
 
 %------------ Corps du rapport ----------------
 
+\section{Introduction}
+Ce rapport présente la réalisation du TP4 ayant pour objectif la mise en place d'un environnement de conteneurisation Docker et d'une interface d'administration Cockpit sur une instance Ubuntu hébergée sur AWS EC2.
 
-\section{Exercice 1}
-
-\subsection*{Description des éléments d'un diagramme de cas d'utilisation}
-
-Un diagramme de cas d'utilisation UML est composé des éléments suivants :
-
+\subsection{Objectifs du TP}
 \begin{itemize}[label=\textbullet]
-    \item \textbf{Acteurs} : Représentés par des pictogrammes (bonhommes), ils désignent les utilisateurs ou systèmes externes qui interagissent avec le système.
-    \item \textbf{Cas d'utilisation} : Représentés par des ellipses, ils décrivent les fonctionnalités du système.
-    \item \textbf{Frontière du système} : Rectangle qui délimite le périmètre du système étudié.
-    \item \textbf{Relations} :
-    \begin{itemize}[label=\textasciimacron]
-        \item \textit{Association} : Ligne simple entre acteur et cas d'utilisation
-        \item \textit{Include} : Relation de dépendance obligatoire (flèche pointillée)
-        \item \textit{Extend} : Relation de dépendance optionnelle (flèche pointillée)
-        \item \textit{Généralisation} : Héritage entre acteurs ou cas d'utilisation (flèche pleine)
-    \end{itemize}
+    \item Créer et configurer une machine virtuelle Ubuntu sur AWS EC2
+    \item Installer et utiliser Docker pour la conteneurisation d'applications
+    \item Déployer Cockpit, une interface web d'administration Linux
+    \item Superviser et gérer les conteneurs et services via une interface graphique
 \end{itemize}
 
-\section{Exercice 2 : Système de gestion des notes}
+\subsection{Technologies utilisées}
 \begin{itemize}[label=\textbullet]
-    \item \textbf{Acteur pour la saisie des notes :} \emph{Enseignant}.  
-    Cas d'utilisation : \emph{Saisir notes}.
-    
-    \item \textbf{Consultation des notes par les enseignants :}  
-    Cas d'utilisation supplémentaires :  
-    \begin{itemize}[label=\textasciimacron]
-        \item \emph{Consulter notes par examen}
-        \item \emph{Consulter notes par élève}
-    \end{itemize}
+    \item \textbf{AWS EC2} : Service de machines virtuelles dans le cloud
+    \item \textbf{Ubuntu 22.04 LTS} : Système d'exploitation Linux
+    \item \textbf{Docker} : Plateforme de conteneurisation
+    \item \textbf{Cockpit} : Interface web d'administration système
+\end{itemize}
 
-    \item \textbf{Directeur :} ce n'est pas un nouvel acteur.  
-    Le directeur est un \emph{spécialisation de l'acteur Enseignant}.
 
-    \item \textbf{Parent :} c'est un \emph{nouvel acteur}.  
-    Cas d'utilisation : \emph{Consulter notes de son enfant}.
+\section{Réalisation pratique}
 
-    \item \textbf{Édition et impression des notes par le directeur :}  
-    Cas d'utilisation à ajouter :  
-    \begin{itemize}[label=\textbullet]
-        \item \emph{Éditer notes par matière}
-        \item \emph{Éditer notes par classe ou niveau}
-        \item \emph{Éditer bulletin semestriel}
-        \item \emph{Imprimer bulletin}
-    \end{itemize}
+\subsection{Étape 1 : Création de l'instance EC2}
+
+\subsubsection{Configuration de l'instance}
+
+J'ai créé une instance EC2 avec les paramètres suivants :
+\begin{itemize}[label=\textbullet]
+    \item \textbf{AMI :} Ubuntu Server 22.04 LTS
+    \item \textbf{Type d'instance :} t2.micro
+    \item \textbf{Clé SSH :} tp4-docker-key.pem
+    \item \textbf{Groupe de sécurité :} Ports 22 (SSH) et 9090 (Cockpit) ouverts
 \end{itemize}
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.65\textwidth]{UseCaseDiagram1.png}
-\caption{Diagramme de cas d'utilisation n°1}
-\label{fig:usecase1}
+    \centering
+    \includegraphics[width=0.8\textwidth]{screenshot1_ec2_creation.png}
+    \caption{Création de l'instance EC2 sur AWS}
+    \label{fig:ec2_creation}
 \end{figure}
 
-\section{Exercice 3 : Système de bibliothèque}
-
-\begin{enumerate}
-    \item Un abonné ne peut emprunter que 3 livres, 3 CD et 2 revues simultanément.
-    \item Un abonné ne peut réserver si des documents ne sont pas rendus dans les délais (2 semaines).
-    \item Réservation annulée si documents non récupérés sous 24h.
-    \item La bibliothécaire vérifie le numéro d'abonné et enregistre le prêt.
-\end{enumerate}
+\subsubsection{Configuration du groupe de sécurité}
+Les règles de sécurité configurées permettent l'accès SSH et Cockpit :
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.65\textwidth]{UseCaseDiagram2.png}
-\caption{Diagramme de cas d'utilisation n°2}
-\label{fig:usecase2}
+    \centering
+    \includegraphics[width=0.8\textwidth]{screenshot2_security_group.png}
+    \caption{Configuration du groupe de sécurité}
+    \label{fig:security_group}
 \end{figure}
 
-\section{Étude de Cas 1 : GAB (Guichet Automatique Bancaire)}
+\newpage
 
-\subsection{Définition du système}
-Système de Guichet Automatique Bancaire permettant aux porteurs de cartes bancaires d'effectuer des opérations bancaires automatisées 24h/24.
+\subsection{Étape 2 : Connexion à l'instance}
 
-\subsection{Liste des acteurs}
-\begin{itemize}[label=\textbullet]
-    \item \textbf{Porteur de carte visa} : Client avec carte bancaire internationale
-    \item \textbf{Porteur de carte de la banque} : Client avec carte de crédit de la banque
-    \item \textbf{Technicien de maintenance} : Personnel technique
-    \item \textbf{Système d'autorisation inter-banque} : Acteur secondaire
-    \item \textbf{Système d'Information de la banque} : Acteur secondaire
-\end{itemize}
+Commande utilisée pour se connecter à l'instance :
 
-\subsection{3. Diagramme de cas d'utilisation}
+\begin{lstlisting}[language=bash]
+ssh -i "KEY_TP4_VM_LINUX.pem" ubuntu@ec2-3-84-104-201.compute-1.amazonaws.com
+\end{lstlisting}
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.8\textwidth]{UseCaseDiagram3.png}
-\caption{Diagramme de cas d'utilisation n°3}
-\label{fig:usecase3}
+    \centering
+    \includegraphics[width=0.8\textwidth]{screenshot3_ssh_connection.png}
+    \caption{Connexion SSH réussie à l'instance Ubuntu}
+    \label{fig:ssh_connection}
 \end{figure}
 
-\section{Étude de Cas 2 : Caisse de supermarché}
+\subsection{Étape 3 : Mise à jour du système}
 
-\subsection{Acteurs}
-\begin{itemize}[label=\textbullet]
-    \item \textbf{Caissier} : Opérateur de la caisse
-    \item \textbf{Client} : Personne effectuant l'achat
-    \item \textbf{Système d'autorisation bancaire} : Acteur secondaire pour paiement carte
-\end{itemize}
+Commandes exécutées :
 
-\subsection{Diagramme de cas d'utilisation}
+\begin{lstlisting}[language=bash]
+sudo apt update && sudo apt upgrade -y
+\end{lstlisting}
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.7\textwidth]{UseCaseDiagram4.png}
-\caption{Diagramme de cas d'utilisation n°4}
-\label{fig:usecase4}
+    \centering
+    \includegraphics[width=0.8\textwidth]{screenshot4_system_update.png}
+    \caption{Mise à jour du système Ubuntu}
+    \label{fig:system_update}
 \end{figure}
 
-\section{Étude de Cas 3 : Gestion de bibliothèque}
+\subsection{Étape 4 : Installation de Docker}
 
-\subsection{Acteurs}
-\begin{itemize}[label=\textbullet]
-    \item \textbf{Acheteur} : Service des achats d'exemplaires
-    \item \textbf{Responsable inscription} : Gère l'inscription des emprunteurs
-    \item \textbf{Responsable prêts} : Enregistre les emprunts
-    \item \textbf{Responsable retours} : Gère les retours et relances
-    \item \textbf{Emprunteur} : Utilisateur de la bibliothèque
-    \item \textbf{Éditeur} : Acteur secondaire (fournisseur)
-\end{itemize}
+\subsubsection{Installation}
+Commandes exécutées :
 
-\subsection{Diagramme de cas d'utilisation}
+\begin{lstlisting}[language=bash]
+sudo apt install -y docker.io
+sudo systemctl enable docker
+sudo systemctl start docker
+sudo usermod -aG docker ubuntu
+\end{lstlisting}
+
+\subsubsection{Test de Docker}
+Après reconnexion, test avec hello-world :
+
+\begin{lstlisting}[language=bash]
+docker run hello-world
+\end{lstlisting}
+
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.8\textwidth]{UseCaseDiagram5.png}
-\caption{Diagramme de cas d'utilisation n°5}
-\label{fig:usecase5}
+    \centering
+    \includegraphics[width=0.8\textwidth]{screenshot6_docker_hello_world.png}
+    \caption{Test de Docker avec hello-world}
+    \label{fig:docker_test}
+\end{figure}
+
+\subsubsection{Déploiement d'un conteneur Nginx}
+Pour démonstration, j'ai déployé un conteneur Nginx :
+
+\begin{lstlisting}[language=bash]
+docker run -d --name test-nginx -p 8080:80 nginx
+docker ps
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{screenshot7_nginx_container.png}
+    \caption{Conteneur Nginx en cours d'exécution}
+    \label{fig:nginx_container}
+\end{figure}
+
+
+\subsection{Étape 5 : Installation de Cockpit}
+
+Commandes exécutées :
+
+\begin{lstlisting}[language=bash]
+sudo apt install -y cockpit
+sudo apt install -y cockpit-docker
+sudo systemctl enable --now cockpit.socket
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{screenshot8_cockpit_install.png}
+    \caption{Installation de Cockpit et du plugin Docker}
+    \label{fig:cockpit_install}
+\end{figure}
+
+\subsection{Étape 6 : Configuration de l'accès Cockpit}
+
+\subsubsection{Définition du mot de passe}
+\begin{lstlisting}[language=bash]
+sudo passwd ubuntu
+\end{lstlisting}
+
+\subsubsection{Vérification du service Cockpit}
+\begin{lstlisting}[language=bash]
+sudo systemctl status cockpit.socket
+\end{lstlisting}
+
+\subsection{Étape 7 : Accès à l'interface Cockpit}
+
+\subsubsection{Page de connexion}
+Accès via : \texttt{https://3.84.104.201:9090}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{screenshot10_cockpit.png}
+    \caption{Page de connexion Cockpit}
+    \label{fig:cockpit_login}
 \end{figure}
 
 \end{document}
