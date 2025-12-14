@@ -33,7 +33,7 @@
 \definecolor{javadocblue}{rgb}{0.25,0.35,0.75}
 \definecolor{codebackground}{rgb}{0.95,0.95,0.92}
 
-\definecolor{bg}{rgb}{0.95,0.95,0.95} % background for custom boxes
+\definecolor{bg}{rgb}{0.95,0.95,0.95}
 
 % -----------------------------------------------------------
 % Custom item bullets
@@ -48,16 +48,15 @@
 \renewcommand{\labelitemiii}{\checkmark}
 
 % -----------------------------------------------------------
-% Listings configuration (final merged version)
+% Listings configuration
 % -----------------------------------------------------------
 
 \lstset{
-    language=Java,
+    language=bash,
     basicstyle=\ttfamily\small,
     keywordstyle=\color{javapurple}\bfseries,
     stringstyle=\color{javared},
     commentstyle=\color{javagreen},
-    morecomment=[s][\color{javadocblue}]{/**}{*/},
     numbers=left,
     numberstyle=\tiny\color{black},
     stepnumber=1,
@@ -74,9 +73,9 @@
 }
 
 \lstdefinelanguage{yaml}{
-  keywords={true,false,null,y,n},
+  keywords={version,services,image,restart,environment,volumes,ports},
   keywordstyle=\color{blue}\bfseries,
-  basicstyle=\ttfamily,
+  basicstyle=\ttfamily\small,
   sensitive=false,
   comment=[l]{\#},
   commentstyle=\color{gray}\ttfamily,
@@ -85,35 +84,18 @@
 }
 
 % -----------------------------------------------------------
-% Manual French accents (kept for compatibility)
-% -----------------------------------------------------------
 
-\newcommand{\eacute}{\'{e}}
-\newcommand{\egrave}{\`{e}}
-\newcommand{\ecirc}{\^{e}}
-\newcommand{\ccedil}{\c{c}}
-\newcommand{\agrave}{\`{a}}
-\newcommand{\acirc}{\^{a}}
-\newcommand{\icirc}{\^{i}}
-\newcommand{\ocirc}{\^{o}}
-\newcommand{\ucirc}{\^{u}}
-\newcommand{\Eacute}{\'{E}}
-\newcommand{\Ccedil}{\c{C}}
-
-% -----------------------------------------------------------
-
-\title{Rapport Enset - Template}
+\title{Rapport TP7 - WordPress}
 
 \begin{document}
 
 %----------- Informations du rapport ---------
 
-\titre{TP5 – Conteneurisation avec Dockerfile
-et Docker Compose} 
-\sujet{Module : Virtualisation et Cloud computing}
+\titre{TP7 – Déployer WordPress avec Docker sur EC2} 
+\sujet{Module : Virtualisation et Cloud Computing}
 
 \enseignant{Pr. Azeddine \textsc{KHIAT}}
-\eleves{Yasser \textsc{Namez}}
+\eleves{Yasser \textsc{NAMEZ}}
 
 %----------- Initialisation -------------------
 
@@ -125,192 +107,381 @@ et Docker Compose}
 
 \section{Introduction}
 
-Dans ce TP, nous avons appris à créer notre propre image Docker à l'aide d'un Dockerfile, puis à automatiser l'orchestration d'un service web avec Docker Compose. Ce travail fait suite au TP précédent et permet de comprendre comment construire et déployer une application dans un environnement conteneurisé.
+Ce travail pratique consiste à déployer un site WordPress complet dans le cloud AWS en utilisant Docker et Docker Compose. WordPress est le système de gestion de contenu (CMS) le plus populaire au monde, utilisé par plus de 40\% des sites web. Nous allons mettre en place une architecture conteneurisée avec WordPress et MySQL, accessible via le port 7070.
 
 \section{Objectifs du TP}
 
 Les objectifs de ce travail pratique sont les suivants :
 
 \begin{itemize}
-    \item Construire une image Docker personnalisée avec un Dockerfile
-    \item Déployer un site web statique dans un conteneur Nginx
-    \item Utiliser Docker Compose pour orchestrer et lancer le service automatiquement
-    \item Vérifier le bon fonctionnement du site via un navigateur
+    \item Créer et configurer une instance EC2 sur AWS
+    \item Installer et configurer Docker et Docker Compose
+    \item Déployer WordPress et MySQL en conteneurs
+    \item Configurer le mapping de ports personnalisé (7070)
+    \item Créer un portail WordPress professionnel avec plusieurs pages
+    \item Personnaliser le thème et installer des plugins
+    \item Gérer les utilisateurs WordPress
 \end{itemize}
 
-\section{Partie 1 --- Préparation de l'environnement}
+\section{Partie 1 Déploiement Docker sur EC2}
 
-\subsection{Connexion à la machine EC2}
+\subsection{Création de l'instance EC2}
 
-Pour commencer, nous nous connectons à notre instance EC2 via SSH :
+Nous commençons par créer une instance EC2 sur AWS avec les caractéristiques suivantes :
 
-\begin{lstlisting}
-ssh -i "LINUX_TP3_DOCKER&COCKPIT.pem" ubuntu@ec2-44-197-209-236.compute-1.amazonaws.com
-\end{lstlisting}
+\begin{itemize}
+    \item Image : Ubuntu Server 22.04 LTS
+    \item Type : t2.small (recommandé pour WordPress)
+    \item Key Pair : wordpress-key.pem
+\end{itemize}
 
-
-\begin{figure}[h]
+\begin{figure}[H]
 \centering
-\includegraphics[width=0.8\textwidth]{image2.png}
-\caption{Connexion SSH à l'instance EC2}
+\includegraphics[width=0.9\textwidth]{ec2_instance.png}
+\caption{Instance EC2 créée pour WordPress}
 \end{figure}
 
-\section{Partie 2 --- Création d'une application simple}
+\subsection{Configuration du Security Group}
 
-\subsection{Création du dossier de travail}
+Le Security Group doit autoriser les ports suivants :
 
-Nous créons un dossier dédié pour notre projet :
+\begin{itemize}
+    \item Port 22 (SSH) : pour la connexion à distance
+    \item Port 7070 (HTTP) : pour accéder à WordPress
+\end{itemize}
 
-\begin{lstlisting}
-mkdir ~/tp5_docker && cd ~/tp5_docker
-\end{lstlisting}
-
-\subsection{Création du fichier index.html}
-
-Nous créons ensuite un fichier HTML simple pour notre site web statique :
-
-\begin{lstlisting}
-nano index.html
-\end{lstlisting}
-
-Le contenu du fichier est le suivant :
-
-\begin{lstlisting}[language=html]
-<!DOCTYPE html>
-<html>
-<head>
-    <title>TP5 - Conteneurisation</title>
-</head>
-<body style="text-align:center; font-family:sans-serif;">
-    <h1>Bienvenue dans le TP5</h1>
-    <p>Ce site tourne dans un conteneur Nginx personnalise !</p>
-</body>
-</html>
-\end{lstlisting}
-
-\begin{figure}[h]
+\begin{figure}[H]
 \centering
-\includegraphics[width=0.7\textwidth]{image4.png}
-\caption{Édition du fichier index.html}
+\includegraphics[width=0.9\textwidth]{security_group.png}
+\caption{Configuration du Security Group avec le port 7070}
 \end{figure}
 
+\subsection{Connexion SSH à l'instance}
 
-\section{Partie 3 --- Création du Dockerfile}
-
-\subsection{Création du fichier Dockerfile}
-
-Nous créons maintenant le Dockerfile qui définira notre image personnalisée :
+Nous nous connectons à l'instance via SSH :
 
 \begin{lstlisting}
-nano Dockerfile
+chmod 400 wordpress-key.pem
+ssh -i wordpress-key.pem ubuntu@IP_PUBLIC
 \end{lstlisting}
 
-Contenu du Dockerfile :
-
-\begin{lstlisting}
-# Etape 1 : Choisir une image de base
-FROM nginx:latest
-
-# Etape 2 : Copier le fichier HTML dans le conteneur
-COPY ./index.html /usr/share/nginx/html/index.html
-
-# Etape 3 : Exposer le port 80 pour l'acces web
-EXPOSE 80
-
-# Etape 4 : Lancer Nginx
-CMD ["nginx", "-g", "daemon off;"]
-\end{lstlisting}
-
-\begin{figure}[h]
+\begin{figure}[H]
 \centering
-\includegraphics[width=0.8\textwidth]{image5.png}
-\caption{Contenu du Dockerfile}
+\includegraphics[width=0.8\textwidth]{ssh_connection.png}
+\caption{Connexion SSH réussie à l'instance EC2}
 \end{figure}
 
-\section{Partie 4 --- Construction et exécution de l'image}
+\subsection{Installation de Docker}
 
-\subsection{Construction de l'image Docker}
-
-Nous construisons notre image Docker à partir du Dockerfile :
+Nous installons Docker et Docker Compose sur l'instance :
 
 \begin{lstlisting}
-docker build -t tp5_nginx:1.0 .
+sudo apt update
+sudo apt install -y docker.io docker-compose-plugin
+sudo usermod -aG docker $USER
 \end{lstlisting}
 
-Puis nous vérifions la création de l'image :
+Après avoir ajouté l'utilisateur au groupe docker, nous devons nous déconnecter et reconnecter :
 
 \begin{lstlisting}
-docker images
+exit
+ssh -i wordpress-key.pem ubuntu@IP_PUBLIC
 \end{lstlisting}
 
-\begin{figure}[h]
-\centering
-\includegraphics[width=0.8\textwidth]{image6.png}
-\caption{Construction et vérification de l'image Docker}
-\end{figure}
-
-\subsection{Lancement du conteneur}
-
-Nous lançons maintenant un conteneur basé sur notre image :
+Vérification de l'installation :
 
 \begin{lstlisting}
-docker run -d -p 8080:80 tp5_nginx:1.0
-\end{lstlisting}
-
-\begin{figure}[h]
-\centering
-\includegraphics[width=0.8\textwidth]{image7.png}
-\caption{Lancement du conteneur}
-\end{figure}
-
-\section{Partie 5 --- Orchestration avec Docker Compose}
-
-\subsection{Création du fichier docker-compose.yml}
-
-Pour automatiser le déploiement, nous créons un fichier Docker Compose :
-
-\begin{lstlisting}
-nano docker-compose.yml
-\end{lstlisting}
-
-Contenu du fichier :
-
-\begin{lstlisting}[language=yaml]
-version: '3'
-services:
-  web:
-    build: .
-    container_name: tp5_nginx
-    ports:
-      - "8080:80"
-    restart: always
-\end{lstlisting}
-
-\begin{figure}[h]
-\centering
-\includegraphics[width=0.8\textwidth]{image8.png}
-\caption{Fichier docker-compose.yml}
-\end{figure}
-
-\subsection{Lancement avec Docker Compose}
-
-Nous lançons notre application avec Docker Compose :
-
-\begin{lstlisting}
-docker-compose up -d
+docker --version
 docker ps
 \end{lstlisting}
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{docker_version.png}
+\caption{Vérification de l'installation de Docker}
+\end{figure}
+
+\subsection{Création du projet WordPress}
+
+Nous créons un dossier pour notre projet :
+
+\begin{lstlisting}
+mkdir tp7-wordpress
+cd tp7-wordpress
+nano docker-compose.yml
+\end{lstlisting}
+
+\subsection{Configuration du fichier docker-compose.yml}
+
+Nous créons le fichier de configuration Docker Compose avec deux services : MySQL et WordPress.
+
+\begin{lstlisting}[language=yaml]
+version: "3.8"
+
+services:
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wpuser
+      MYSQL_PASSWORD: wppassword
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - db_data:/var/lib/mysql
+
+  wordpress:
+    image: wordpress:latest
+    restart: always
+    ports:
+      - "7070:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wpuser
+      WORDPRESS_DB_PASSWORD: wppassword
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - wp_data:/var/www/html
+
+volumes:
+  db_data:
+  wp_data:
+\end{lstlisting}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{docker_compose_file.png}
+\caption{Fichier docker-compose.yml pour WordPress}
+\end{figure}
+
+\subsection{Lancement des conteneurs}
+
+Nous lançons la stack WordPress avec Docker Compose :
+
+\begin{lstlisting}
+docker compose up -d
+\end{lstlisting}
+
+Vérification que les conteneurs tournent :
+
+\begin{lstlisting}
+docker ps
+\end{lstlisting}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\textwidth]{docker_ps.png}
+\caption{Les deux conteneurs WordPress et MySQL en cours d'exécution}
+\end{figure}
+
+\subsection{Accès à WordPress}
+
+Nous accédons à WordPress via un navigateur web :
+
+\begin{lstlisting}
+http://IP_PUBLIC:7070
+\end{lstlisting}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{wordpress_install.png}
+\caption{Page d'installation de WordPress sur le port 7070}
+\end{figure}
+
+\subsection{Installation de WordPress}
+
+Lors de la première connexion, nous configurons WordPress avec les informations suivantes :
+
+\begin{itemize}
+    \item Titre du site : Mon Portail Professionnel
+    \item Nom d'utilisateur : admin
+    \item Mot de passe : (mot de passe fort généré)
+    \item Email : votre@email.com
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{wordpress_dashboard.png}
+\caption{Tableau de bord WordPress après installation}
+\end{figure}
+
+\section{Partie 2 Création du portail WordPress}
+
+\subsection{Installation et activation d'un thème}
+
+Nous installons un thème gratuit pour personnaliser l'apparence du site.
+
+Navigation : \textbf{Apparence → Thèmes → Ajouter un thème}
+
+Thème choisi : Astra (ou tout autre thème moderne gratuit)
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{wordpress_theme.png}
+\caption{Installation et activation du thème WordPress}
+\end{figure}
+
+\subsection{Création des pages}
+
+Nous créons les quatre pages principales du site :
+
+Navigation : \textbf{Pages → Ajouter}
+
+\subsubsection{Page Accueil}
+
+Nous créons la page d'accueil avec un contenu de bienvenue, une présentation de l'entreprise ou du projet.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{page_accueil.png}
+\caption{Page Accueil personnalisée}
+\end{figure}
+
+\subsubsection{Page À propos}
+
+Cette page présente l'histoire, la mission et les valeurs de l'organisation.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{page_apropos.png}
+\caption{Page À propos}
+\end{figure}
+
+\subsubsection{Page Services}
+
+Cette page liste les services ou produits proposés.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{page_services.png}
+\caption{Page Services}
+\end{figure}
+
+\subsubsection{Page Contact}
+
+Cette page contient les informations de contact et un formulaire.
+
+% \begin{figure}[H]
+% \centering
+% \includegraphics[width=0.9\textwidth]{page_contact.png}
+% \caption{Page Contact}
+% \end{figure}
+
+\subsection{Configuration du menu principal}
+
+Nous créons un menu de navigation pour lier toutes les pages.
+
+Navigation : \textbf{Apparence → Menus}
+
+\begin{itemize}
+    \item Nom du menu : Menu Principal
+    \item Éléments : Accueil, À propos, Services, Contact
+    \item Emplacement : Menu principal
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{menu_principal.png}
+\caption{Configuration du menu principal}
+\end{figure}
+
+\subsection{Personnalisation du site}
+
+Navigation : \textbf{Apparence → Personnaliser}
+
+Nous personnalisons les éléments suivants :
+
+\begin{itemize}
+    \item Titre et slogan du site
+    \item Logo personnalisé
+    \item Couleurs du thème
+    \item Image de bannière / en-tête
+    \item Typographie
+\end{itemize}
+
+% \begin{figure}[H]
+% \centering
+% \includegraphics[width=0.9\textwidth]{personnalisation.png}
+% \caption{Personnalisation de l'apparence du site}
+% \end{figure}
+
+\subsection{Installation des plugins}
+
+\subsubsection{Plugin 1 : Contact Form 7}
+
+Nous installons Contact Form 7 pour créer un formulaire de contact.
+
+Navigation : \textbf{Extensions → Ajouter}
+
+% \begin{figure}[H]
+% \centering
+% \includegraphics[width=0.9\textwidth]{plugin_contact_form.png}
+% \caption{Installation du plugin Contact Form 7}
+% \end{figure}
+
+Configuration du formulaire de contact :
+
+Navigation : \textbf{Contact → Formulaires de contact}
+
+Nous créons un formulaire avec les champs : Nom, Email, Sujet, Message.
+
+% \begin{figure}[H]
+% \centering
+% \includegraphics[width=0.9\textwidth]{formulaire_contact.png}
+% \caption{Formulaire de contact intégré dans la page Contact}
+% \end{figure}
+
+\subsubsection{Plugin 2 : Yoast SEO}
+
+Nous installons Yoast SEO pour optimiser le référencement du site.
+
+% \begin{figure}[H]
+% \centering
+% \includegraphics[width=0.9\textwidth]{plugin_yoast_seo.png}
+% \caption{Installation du plugin Yoast SEO}
+% \end{figure}
+
+\subsection{Gestion des utilisateurs}
+
+Nous créons un utilisateur supplémentaire avec le rôle Éditeur.
+
+Navigation : \textbf{Utilisateurs → Ajouter}
+
+\begin{itemize}
+    \item Nom d'utilisateur : editeur
+    \item Email : editeur@example.com
+    \item Rôle : Éditeur
+\end{itemize}
+
+% \begin{figure}[H]
+% \centering
+% \includegraphics[width=0.9\textwidth]{utilisateurs.png}
+% \caption{Liste des utilisateurs WordPress (Admin + Éditeur)}
+% \end{figure}
+
+\subsection{Aperçu final du site}
+
+% \begin{figure}[H]
+% \centering
+% \includegraphics[width=0.9\textwidth]{site_final.png}
+% \caption{Aperçu final du portail WordPress personnalisé}
+% \end{figure}
+
 \section{Conclusion}
 
-Ce TP nous a permis de comprendre le processus complet de création d'une image Docker et son déploiement à l'aide de Docker Compose. Nous avons appris à automatiser le lancement d'une application web conteneurisée, ce qui constitue une étape essentielle dans la mise en place d'environnements de développement ou de production modernes.
+Ce travail pratique nous a permis de déployer une solution WordPress complète dans le cloud AWS en utilisant Docker et Docker Compose. Nous avons acquis des compétences importantes en :
 
-Les compétences acquises incluent :
 \begin{itemize}
-    \item La création d'images Docker personnalisées via Dockerfile
-    \item L'utilisation de Docker Compose pour l'orchestration
-    \item Le déploiement d'applications web dans des conteneurs
-    \item La gestion des ports et des services conteneurisés
+    \item Déploiement d'applications web conteneurisées sur AWS EC2
+    \item Configuration de Docker Compose pour orchestrer plusieurs services
+    \item Gestion du mapping de ports personnalisé
+    \item Création et personnalisation d'un site WordPress professionnel
+    \item Installation et configuration de thèmes et plugins
+    \item Gestion des utilisateurs et des rôles dans WordPress
 \end{itemize}
+
+Cette architecture conteneurisée présente plusieurs avantages : portabilité, isolation des services, facilité de déploiement et de mise à jour. Les volumes Docker garantissent la persistance des données (base de données et fichiers WordPress) même en cas de redémarrage des conteneurs.
+
+WordPress, couplé à Docker, offre une solution flexible et scalable pour créer rapidement des sites web professionnels, des blogs, des portfolios ou des sites e-commerce. L'utilisation du cloud AWS permet en outre de bénéficier d'une infrastructure hautement disponible et évolutive.
 
 \end{document}
