@@ -1,28 +1,9 @@
 \babel@toc {french}{}\relax 
 \contentsline {section}{\numberline {1}Introduction}{2}{section.1}%
-\contentsline {section}{\numberline {2}Objectifs du TP}{2}{section.2}%
-\contentsline {section}{\numberline {3}Partie 1 Déploiement Docker sur EC2}{2}{section.3}%
-\contentsline {subsection}{\numberline {3.1}Création de l'instance EC2}{2}{subsection.3.1}%
-\contentsline {subsection}{\numberline {3.2}Configuration du Security Group}{3}{subsection.3.2}%
-\contentsline {subsection}{\numberline {3.3}Connexion SSH à l'instance}{4}{subsection.3.3}%
-\contentsline {subsection}{\numberline {3.4}Installation de Docker}{5}{subsection.3.4}%
-\contentsline {subsection}{\numberline {3.5}Création du projet WordPress}{6}{subsection.3.5}%
-\contentsline {subsection}{\numberline {3.6}Configuration du fichier docker-compose.yml}{6}{subsection.3.6}%
-\contentsline {subsection}{\numberline {3.7}Lancement des conteneurs}{7}{subsection.3.7}%
-\contentsline {subsection}{\numberline {3.8}Accès à WordPress}{8}{subsection.3.8}%
-\contentsline {subsection}{\numberline {3.9}Installation de WordPress}{9}{subsection.3.9}%
-\contentsline {section}{\numberline {4}Partie 2 Création du portail WordPress}{10}{section.4}%
-\contentsline {subsection}{\numberline {4.1}Installation et activation d'un thème}{10}{subsection.4.1}%
-\contentsline {subsection}{\numberline {4.2}Création des pages}{11}{subsection.4.2}%
-\contentsline {subsubsection}{\numberline {4.2.1}Page Accueil}{11}{subsubsection.4.2.1}%
-\contentsline {subsubsection}{\numberline {4.2.2}Page À propos}{12}{subsubsection.4.2.2}%
-\contentsline {subsubsection}{\numberline {4.2.3}Page Services}{13}{subsubsection.4.2.3}%
-\contentsline {subsubsection}{\numberline {4.2.4}Page Contact}{14}{subsubsection.4.2.4}%
-\contentsline {subsection}{\numberline {4.3}Configuration du menu principal}{14}{subsection.4.3}%
-\contentsline {subsection}{\numberline {4.4}Personnalisation du site}{15}{subsection.4.4}%
-\contentsline {subsection}{\numberline {4.5}Installation des plugins}{15}{subsection.4.5}%
-\contentsline {subsubsection}{\numberline {4.5.1}Plugin 1 : Contact Form 7}{15}{subsubsection.4.5.1}%
-\contentsline {subsubsection}{\numberline {4.5.2}Plugin 2 : Yoast SEO}{16}{subsubsection.4.5.2}%
-\contentsline {subsection}{\numberline {4.6}Gestion des utilisateurs}{16}{subsection.4.6}%
-\contentsline {subsection}{\numberline {4.7}Aperçu final du site}{16}{subsection.4.7}%
-\contentsline {section}{\numberline {5}Conclusion}{16}{section.5}%
+\contentsline {section}{\numberline {2}Objectifs de l’activité}{2}{section.2}%
+\contentsline {section}{\numberline {3}Présentation d’AWS Elastic Beanstalk}{2}{section.3}%
+\contentsline {section}{\numberline {4}Description de l’activité}{2}{section.4}%
+\contentsline {section}{\numberline {5}Prérequis}{3}{section.5}%
+\contentsline {section}{\numberline {6}Connexion à la console AWS}{3}{section.6}%
+\contentsline {section}{\numberline {7}Utilisation d’AWS Elastic Beanstalk}{4}{section.7}%
+\contentsline {section}{\numberline {8}Suite de l’activité : AWS Cloud Foundations – Activities}{5}{section.8}%

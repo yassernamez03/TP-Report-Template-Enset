@@ -25,75 +25,24 @@
 % -----------------------------------------------------------
 
 \definecolor{winblue}{RGB}{0,120,215}
-\definecolor{lightgray}{RGB}{240,240,240}
-
-\definecolor{javared}{rgb}{0.6,0,0}
-\definecolor{javagreen}{rgb}{0.25,0.5,0.35}
-\definecolor{javapurple}{rgb}{0.5,0,0.35}
-\definecolor{javadocblue}{rgb}{0.25,0.35,0.75}
-\definecolor{codebackground}{rgb}{0.95,0.95,0.92}
-
-\definecolor{bg}{rgb}{0.95,0.95,0.95}
 
 % -----------------------------------------------------------
 % Custom item bullets
 % -----------------------------------------------------------
 
 \newcommand{\bulletpoint}{\textcolor{winblue}{\textbullet}}
-\newcommand{\crossmark}{\textcolor{javared}{\ding{55}}}
-\newcommand{\arrowpoint}{\textcolor{winblue}{\ding{226}}}
-
 \renewcommand{\labelitemi}{\bulletpoint}
-\renewcommand{\labelitemii}{\arrowpoint}
-\renewcommand{\labelitemiii}{\checkmark}
-
-% -----------------------------------------------------------
-% Listings configuration
-% -----------------------------------------------------------
-
-\lstset{
-    language=bash,
-    basicstyle=\ttfamily\small,
-    keywordstyle=\color{javapurple}\bfseries,
-    stringstyle=\color{javared},
-    commentstyle=\color{javagreen},
-    numbers=left,
-    numberstyle=\tiny\color{black},
-    stepnumber=1,
-    numbersep=10pt,
-    tabsize=4,
-    showspaces=false,
-    showstringspaces=false,
-    backgroundcolor=\color{codebackground},
-    frame=single,
-    captionpos=b,
-    breaklines=true,
-    breakatwhitespace=false,
-    escapeinside={(*@}{@*)}
-}
-
-\lstdefinelanguage{yaml}{
-  keywords={version,services,image,restart,environment,volumes,ports},
-  keywordstyle=\color{blue}\bfseries,
-  basicstyle=\ttfamily\small,
-  sensitive=false,
-  comment=[l]{\#},
-  commentstyle=\color{gray}\ttfamily,
-  stringstyle=\color{red}\ttfamily,
-  moredelim=[l][\color{magenta}]{:},
-}
 
 % -----------------------------------------------------------
 
-\title{Rapport TP7 - WordPress}
+\title{Compte rendu – AWS Elastic Beanstalk}
 
 \begin{document}
 
 %----------- Informations du rapport ---------
 
-\titre{TP7 – Déployer WordPress avec Docker sur EC2} 
-\sujet{Module : Virtualisation et Cloud Computing}
-
+\titre{Compte rendu – Activité AWS Elastic Beanstalk}
+\sujet{Module : Cloud Computing}
 \enseignant{Pr. Azeddine \textsc{KHIAT}}
 \eleves{Yasser \textsc{NAMEZ}}
 
@@ -102,386 +51,150 @@
 \fairemarges
 \fairepagedegarde
 \tabledematieres
+\newpage
 
 %------------ Corps du rapport ----------------
 
 \section{Introduction}
 
-Ce travail pratique consiste à déployer un site WordPress complet dans le cloud AWS en utilisant Docker et Docker Compose. WordPress est le système de gestion de contenu (CMS) le plus populaire au monde, utilisé par plus de 40\% des sites web. Nous allons mettre en place une architecture conteneurisée avec WordPress et MySQL, accessible via le port 7070.
+Cette activité s’inscrit dans le cadre du parcours \textbf{AWS Cloud Foundations}.  
+Elle vise à découvrir et manipuler le service \textbf{AWS Elastic Beanstalk}, qui permet de déployer et gérer facilement des applications web sans se soucier de la gestion détaillée de l’infrastructure sous-jacente.
 
-\section{Objectifs du TP}
+Le lab consiste à déployer une application web de démonstration sur un environnement Elastic Beanstalk préconfiguré et à observer les ressources AWS automatiquement créées.
 
-Les objectifs de ce travail pratique sont les suivants :
+\section{Objectifs de l’activité}
 
-\begin{itemize}
-    \item Créer et configurer une instance EC2 sur AWS
-    \item Installer et configurer Docker et Docker Compose
-    \item Déployer WordPress et MySQL en conteneurs
-    \item Configurer le mapping de ports personnalisé (7070)
-    \item Créer un portail WordPress professionnel avec plusieurs pages
-    \item Personnaliser le thème et installer des plugins
-    \item Gérer les utilisateurs WordPress
-\end{itemize}
-
-\section{Partie 1 Déploiement Docker sur EC2}
-
-\subsection{Création de l'instance EC2}
-
-Nous commençons par créer une instance EC2 sur AWS avec les caractéristiques suivantes :
+Les objectifs principaux de cette activité sont :
 
 \begin{itemize}
-    \item Image : Ubuntu Server 22.04 LTS
-    \item Type : t2.small (recommandé pour WordPress)
-    \item Key Pair : wordpress-key.pem
+    \item Comprendre le rôle d’AWS Elastic Beanstalk dans le cloud AWS
+    \item Déployer une application web sans gestion manuelle des serveurs
+    \item Observer les ressources AWS générées automatiquement
+    \item Découvrir la gestion et la supervision d’un environnement applicatif
 \end{itemize}
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{ec2_instance.png}
-\caption{Instance EC2 créée pour WordPress}
-\end{figure}
+\section{Présentation d’AWS Elastic Beanstalk}
 
-\subsection{Configuration du Security Group}
+AWS Elastic Beanstalk est un service qui simplifie le déploiement et la gestion d’applications web et de services. Il permet aux développeurs de se concentrer sur le code sans gérer l’infrastructure.
 
-Le Security Group doit autoriser les ports suivants :
+\subsection*{Type de service}
 
 \begin{itemize}
-    \item Port 22 (SSH) : pour la connexion à distance
-    \item Port 7070 (HTTP) : pour accéder à WordPress
+    \item \textbf{Type :} PaaS – Platform as a Service
 \end{itemize}
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{security_group.png}
-\caption{Configuration du Security Group avec le port 7070}
-\end{figure}
-
-\subsection{Connexion SSH à l'instance}
-
-Nous nous connectons à l'instance via SSH :
-
-\begin{lstlisting}
-chmod 400 wordpress-key.pem
-ssh -i wordpress-key.pem ubuntu@IP_PUBLIC
-\end{lstlisting}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.8\textwidth]{ssh_connection.png}
-\caption{Connexion SSH réussie à l'instance EC2}
-\end{figure}
-
-\subsection{Installation de Docker}
-
-Nous installons Docker et Docker Compose sur l'instance :
-
-\begin{lstlisting}
-sudo apt update
-sudo apt install -y docker.io docker-compose-plugin
-sudo usermod -aG docker $USER
-\end{lstlisting}
-
-Après avoir ajouté l'utilisateur au groupe docker, nous devons nous déconnecter et reconnecter :
-
-\begin{lstlisting}
-exit
-ssh -i wordpress-key.pem ubuntu@IP_PUBLIC
-\end{lstlisting}
-
-Vérification de l'installation :
-
-\begin{lstlisting}
-docker --version
-docker ps
-\end{lstlisting}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.8\textwidth]{docker_version.png}
-\caption{Vérification de l'installation de Docker}
-\end{figure}
-
-\subsection{Création du projet WordPress}
-
-Nous créons un dossier pour notre projet :
-
-\begin{lstlisting}
-mkdir tp7-wordpress
-cd tp7-wordpress
-nano docker-compose.yml
-\end{lstlisting}
-
-\subsection{Configuration du fichier docker-compose.yml}
-
-Nous créons le fichier de configuration Docker Compose avec deux services : MySQL et WordPress.
-
-\begin{lstlisting}[language=yaml]
-version: "3.8"
-
-services:
-  db:
-    image: mysql:5.7
-    restart: always
-    environment:
-      MYSQL_DATABASE: wordpress
-      MYSQL_USER: wpuser
-      MYSQL_PASSWORD: wppassword
-      MYSQL_ROOT_PASSWORD: rootpassword
-    volumes:
-      - db_data:/var/lib/mysql
-
-  wordpress:
-    image: wordpress:latest
-    restart: always
-    ports:
-      - "7070:80"
-    environment:
-      WORDPRESS_DB_HOST: db:3306
-      WORDPRESS_DB_USER: wpuser
-      WORDPRESS_DB_PASSWORD: wppassword
-      WORDPRESS_DB_NAME: wordpress
-    volumes:
-      - wp_data:/var/www/html
-
-volumes:
-  db_data:
-  wp_data:
-\end{lstlisting}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{docker_compose_file.png}
-\caption{Fichier docker-compose.yml pour WordPress}
-\end{figure}
-
-\subsection{Lancement des conteneurs}
-
-Nous lançons la stack WordPress avec Docker Compose :
-
-\begin{lstlisting}
-docker compose up -d
-\end{lstlisting}
-
-Vérification que les conteneurs tournent :
-
-\begin{lstlisting}
-docker ps
-\end{lstlisting}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=1\textwidth]{docker_ps.png}
-\caption{Les deux conteneurs WordPress et MySQL en cours d'exécution}
-\end{figure}
-
-\subsection{Accès à WordPress}
-
-Nous accédons à WordPress via un navigateur web :
-
-\begin{lstlisting}
-http://IP_PUBLIC:7070
-\end{lstlisting}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{wordpress_install.png}
-\caption{Page d'installation de WordPress sur le port 7070}
-\end{figure}
-
-\subsection{Installation de WordPress}
-
-Lors de la première connexion, nous configurons WordPress avec les informations suivantes :
+\subsection*{Fonctionnalités principales}
 
 \begin{itemize}
-    \item Titre du site : Mon Portail Professionnel
-    \item Nom d'utilisateur : admin
-    \item Mot de passe : (mot de passe fort généré)
-    \item Email : votre@email.com
+    \item Déploiement automatique des applications
+    \item Gestion de la mise à l’échelle
+    \item Surveillance de l’état de l’application
+    \item Intégration avec EC2, ELB, Auto Scaling et CloudWatch
 \end{itemize}
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{wordpress_dashboard.png}
-\caption{Tableau de bord WordPress après installation}
-\end{figure}
+\section{Description de l’activité}
 
-\section{Partie 2 Création du portail WordPress}
+L’activité s’est déroulée selon les étapes suivantes :
 
-\subsection{Installation et activation d'un thème}
+\begin{enumerate}
+    \item Accès à un environnement Elastic Beanstalk déjà créé
+    \item Vérification de l’état de santé de l’environnement
+    \item Test de l’URL de l’application (erreur 404 attendue)
+    \item Déploiement d’une application de démonstration Tomcat
+    \item Vérification du bon fonctionnement de l’application
+    \item Consultation des paramètres de configuration
+    \item Exploration des ressources EC2 associées
+\end{enumerate}
 
-Nous installons un thème gratuit pour personnaliser l'apparence du site.
+\section{Prérequis}
 
-Navigation : \textbf{Apparence → Thèmes → Ajouter un thème}
-
-Thème choisi : Astra (ou tout autre thème moderne gratuit)
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{wordpress_theme.png}
-\caption{Installation et activation du thème WordPress}
-\end{figure}
-
-\subsection{Création des pages}
-
-Nous créons les quatre pages principales du site :
-
-Navigation : \textbf{Pages → Ajouter}
-
-\subsubsection{Page Accueil}
-
-Nous créons la page d'accueil avec un contenu de bienvenue, une présentation de l'entreprise ou du projet.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{page_accueil.png}
-\caption{Page Accueil personnalisée}
-\end{figure}
-
-\subsubsection{Page À propos}
-
-Cette page présente l'histoire, la mission et les valeurs de l'organisation.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{page_apropos.png}
-\caption{Page À propos}
-\end{figure}
-
-\subsubsection{Page Services}
-
-Cette page liste les services ou produits proposés.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{page_services.png}
-\caption{Page Services}
-\end{figure}
-
-\subsubsection{Page Contact}
-
-Cette page contient les informations de contact et un formulaire.
-
-% \begin{figure}[H]
-% \centering
-% \includegraphics[width=0.9\textwidth]{page_contact.png}
-% \caption{Page Contact}
-% \end{figure}
-
-\subsection{Configuration du menu principal}
-
-Nous créons un menu de navigation pour lier toutes les pages.
-
-Navigation : \textbf{Apparence → Menus}
+Avant de commencer l’activité, les prérequis suivants sont nécessaires :
 
 \begin{itemize}
-    \item Nom du menu : Menu Principal
-    \item Éléments : Accueil, À propos, Services, Contact
-    \item Emplacement : Menu principal
+    \item Un compte AWS actif (fourni par le lab)
+    \item Accès à la console AWS
+    \item Connaissances de base en cloud computing
+    \item Notions générales sur les applications web
 \end{itemize}
+
+\section{Connexion à la console AWS}
+
+La connexion à la console AWS s’effectue comme suit :
+
+\begin{enumerate}
+    \item Lancement du lab via le bouton \textit{Start Lab}
+    \item Attente de l’activation complète de l’environnement AWS
+    \item Accès à la console AWS via le lien fourni
+\end{enumerate}
+
+\subsection*{Capture 1 : Page de connexion AWS}
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{menu_principal.png}
-\caption{Configuration du menu principal}
+    \centering
+    \includegraphics[width=0.85\textwidth]{aws_login.png}
+    \caption{Page de connexion à la console AWS}
 \end{figure}
 
-\subsection{Personnalisation du site}
+Cette capture illustre l’interface permettant d’accéder à la console AWS.
 
-Navigation : \textbf{Apparence → Personnaliser}
+\subsection*{Capture 2 : Tableau de bord AWS}
 
-Nous personnalisons les éléments suivants :
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{aws_console.png}
+    \caption{Tableau de bord AWS après connexion}
+\end{figure}
 
-\begin{itemize}
-    \item Titre et slogan du site
-    \item Logo personnalisé
-    \item Couleurs du thème
-    \item Image de bannière / en-tête
-    \item Typographie
-\end{itemize}
+Le tableau de bord permet d’accéder aux différents services AWS, notamment Elastic Beanstalk.
 
-% \begin{figure}[H]
-% \centering
-% \includegraphics[width=0.9\textwidth]{personnalisation.png}
-% \caption{Personnalisation de l'apparence du site}
-% \end{figure}
+\section{Utilisation d’AWS Elastic Beanstalk}
 
-\subsection{Installation des plugins}
+\subsection*{Création de l’application}
 
-\subsubsection{Plugin 1 : Contact Form 7}
+L’application Elastic Beanstalk est créée automatiquement dans l’environnement du lab.
 
-Nous installons Contact Form 7 pour créer un formulaire de contact.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{eb_application.png}
+    \caption{Création de l’application Elastic Beanstalk}
+\end{figure}
 
-Navigation : \textbf{Extensions → Ajouter}
+\subsection*{Configuration de l’environnement}
 
-% \begin{figure}[H]
-% \centering
-% \includegraphics[width=0.9\textwidth]{plugin_contact_form.png}
-% \caption{Installation du plugin Contact Form 7}
-% \end{figure}
+L’environnement Elastic Beanstalk est configuré avec des instances EC2, un groupe Auto Scaling et un équilibreur de charge.
 
-Configuration du formulaire de contact :
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{eb_configuration.png}
+    \caption{Configuration de l’environnement Elastic Beanstalk}
+\end{figure}
 
-Navigation : \textbf{Contact → Formulaires de contact}
+\subsection*{Déploiement de l’application}
 
-Nous créons un formulaire avec les champs : Nom, Email, Sujet, Message.
+Une application de démonstration Tomcat est déployée avec succès.
 
-% \begin{figure}[H]
-% \centering
-% \includegraphics[width=0.9\textwidth]{formulaire_contact.png}
-% \caption{Formulaire de contact intégré dans la page Contact}
-% \end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{eb_deployment.png}
+    \caption{Déploiement réussi de l’application}
+\end{figure}
 
-\subsubsection{Plugin 2 : Yoast SEO}
+\section{Suite de l’activité : AWS Cloud Foundations – Activities}
 
-Nous installons Yoast SEO pour optimiser le référencement du site.
-
-% \begin{figure}[H]
-% \centering
-% \includegraphics[width=0.9\textwidth]{plugin_yoast_seo.png}
-% \caption{Installation du plugin Yoast SEO}
-% \end{figure}
-
-\subsection{Gestion des utilisateurs}
-
-Nous créons un utilisateur supplémentaire avec le rôle Éditeur.
-
-Navigation : \textbf{Utilisateurs → Ajouter}
+Cette activité s’inscrit dans le parcours \textbf{AWS Cloud Foundations} en introduisant :
 
 \begin{itemize}
-    \item Nom d'utilisateur : editeur
-    \item Email : editeur@example.com
-    \item Rôle : Éditeur
+    \item Les services managés AWS
+    \item Le modèle PaaS
+    \item La gestion automatisée de l’infrastructure
+    \item Les bases du déploiement applicatif dans le cloud
 \end{itemize}
 
-% \begin{figure}[H]
-% \centering
-% \includegraphics[width=0.9\textwidth]{utilisateurs.png}
-% \caption{Liste des utilisateurs WordPress (Admin + Éditeur)}
-% \end{figure}
+Elle prépare à des activités plus avancées telles que le déploiement de microservices ou l’utilisation de services comme Amazon ECS et AWS Lambda.
 
-\subsection{Aperçu final du site}
+\section*{Conclusion}
 
-% \begin{figure}[H]
-% \centering
-% \includegraphics[width=0.9\textwidth]{site_final.png}
-% \caption{Aperçu final du portail WordPress personnalisé}
-% \end{figure}
-
-\section{Conclusion}
-
-Ce travail pratique nous a permis de déployer une solution WordPress complète dans le cloud AWS en utilisant Docker et Docker Compose. Nous avons acquis des compétences importantes en :
-
-\begin{itemize}
-    \item Déploiement d'applications web conteneurisées sur AWS EC2
-    \item Configuration de Docker Compose pour orchestrer plusieurs services
-    \item Gestion du mapping de ports personnalisé
-    \item Création et personnalisation d'un site WordPress professionnel
-    \item Installation et configuration de thèmes et plugins
-    \item Gestion des utilisateurs et des rôles dans WordPress
-\end{itemize}
-
-Cette architecture conteneurisée présente plusieurs avantages : portabilité, isolation des services, facilité de déploiement et de mise à jour. Les volumes Docker garantissent la persistance des données (base de données et fichiers WordPress) même en cas de redémarrage des conteneurs.
-
-WordPress, couplé à Docker, offre une solution flexible et scalable pour créer rapidement des sites web professionnels, des blogs, des portfolios ou des sites e-commerce. L'utilisation du cloud AWS permet en outre de bénéficier d'une infrastructure hautement disponible et évolutive.
+Cette activité a permis de découvrir AWS Elastic Beanstalk comme solution PaaS facilitant le déploiement et la gestion d’applications web.  
+Elle met en évidence la puissance des services managés AWS et leur capacité à réduire la complexité opérationnelle pour les développeurs.
 
 \end{document}
