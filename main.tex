@@ -14,6 +14,7 @@
 \usepackage{enumitem}
 \usepackage{fancyhdr}
 \usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, calc, decorations.pathreplacing, backgrounds}
 \usepackage{tcolorbox}
 \usepackage{caption}
 \usepackage{pifont}
@@ -25,6 +26,8 @@
 % -----------------------------------------------------------
 
 \definecolor{winblue}{RGB}{0,120,215}
+\definecolor{lightgray}{RGB}{245,245,245}
+\definecolor{darkgray}{RGB}{80,80,80}
 
 % -----------------------------------------------------------
 % Custom item bullets
@@ -34,17 +37,42 @@
 \renewcommand{\labelitemi}{\bulletpoint}
 
 % -----------------------------------------------------------
+% Custom boxes
+% -----------------------------------------------------------
 
-\title{Compte rendu – AWS Elastic Beanstalk}
+\newtcolorbox{definitionbox}[1]{
+  colback=lightgray,
+  colframe=winblue,
+  fonttitle=\bfseries,
+  title=#1
+}
+
+\newtcolorbox{avantagesbox}{
+  colback=green!5,
+  colframe=green!60!black,
+  fonttitle=\bfseries,
+  title=Avantages
+}
+
+\newtcolorbox{limitesbox}{
+  colback=red!5,
+  colframe=red!60!black,
+  fonttitle=\bfseries,
+  title=Limites et Défis
+}
+
+% -----------------------------------------------------------
+
+\title{Compte rendu – DevOps : Intégration et Déploiement Continus}
 
 \begin{document}
 
 %----------- Informations du rapport ---------
 
-\titre{Compte rendu – Activité AWS Elastic Beanstalk}
-\sujet{Module : Cloud Computing}
-\enseignant{Pr. Azeddine \textsc{KHIAT}}
-\eleves{Yasser \textsc{NAMEZ}}
+\titre{Compte rendu – DevOps : Intégration et Déploiement Continus (CI/CD)}
+\sujet{Module : Génie Logiciel}
+\enseignant{Mme. Souad \textsc{AHRIZ}}
+\eleves{Abderrahmane \textsc{HEDDAYA} \\ Mohamed Zouhair \textsc{ROUISSIYA} \\ Solaymân \textsc{OUMOUOU} \\ Yasser \textsc{NAMEZ}}
 
 %----------- Initialisation -------------------
 
@@ -57,144 +85,521 @@
 
 \section{Introduction}
 
-Cette activité s’inscrit dans le cadre du parcours \textbf{AWS Cloud Foundations}.  
-Elle vise à découvrir et manipuler le service \textbf{AWS Elastic Beanstalk}, qui permet de déployer et gérer facilement des applications web sans se soucier de la gestion détaillée de l’infrastructure sous-jacente.
+Dans le contexte actuel du développement logiciel, les entreprises font face à des défis majeurs : la nécessité de livrer des fonctionnalités rapidement, d'assurer la qualité des produits, et de maintenir une collaboration efficace entre les équipes de développement et d'exploitation. C'est dans ce contexte que le DevOps, et plus particulièrement les pratiques d'Intégration Continue (CI) et de Déploiement Continue (CD), émergent comme des solutions incontournables.
 
-Le lab consiste à déployer une application web de démonstration sur un environnement Elastic Beanstalk préconfiguré et à observer les ressources AWS automatiquement créées.
+Ce rapport présente les concepts fondamentaux du DevOps, explore en détail les pipelines CI/CD, et analyse les avantages ainsi que les défis liés à l'adoption de ces pratiques dans le développement logiciel moderne.
 
-\section{Objectifs de l’activité}
+\section{DevOps : Concepts Clés}
 
-Les objectifs principaux de cette activité sont :
+\subsection{Définition du DevOps}
 
-\begin{itemize}
-    \item Comprendre le rôle d’AWS Elastic Beanstalk dans le cloud AWS
-    \item Déployer une application web sans gestion manuelle des serveurs
-    \item Observer les ressources AWS générées automatiquement
-    \item Découvrir la gestion et la supervision d’un environnement applicatif
-\end{itemize}
+\begin{definitionbox}{DevOps}
+DevOps est une contraction de \textbf{Development} (Développement) et \textbf{Operations} (Opérations). Il s'agit d'une philosophie et d'un ensemble de pratiques qui visent à unifier le développement logiciel et l'exploitation des systèmes informatiques.
+\end{definitionbox}
 
-\section{Présentation d’AWS Elastic Beanstalk}
-
-AWS Elastic Beanstalk est un service qui simplifie le déploiement et la gestion d’applications web et de services. Il permet aux développeurs de se concentrer sur le code sans gérer l’infrastructure.
-
-\subsection*{Type de service}
+Le DevOps repose sur plusieurs piliers fondamentaux :
 
 \begin{itemize}
-    \item \textbf{Type :} PaaS – Platform as a Service
+    \item \textbf{Livraison continue} : permettre une mise en production rapide et fréquente des nouvelles fonctionnalités
+    \item \textbf{Collaboration} : briser les silos entre les équipes de développement, de test et d'exploitation
+    \item \textbf{Automatisation} : réduire les tâches manuelles répétitives et sources d'erreurs
+    \item \textbf{Culture du continu} : instaurer une amélioration permanente à tous les niveaux du cycle de développement
+    \item \textbf{Changement de paradigme} : transformer la manière dont les organisations conçoivent et livrent des logiciels
 \end{itemize}
 
-\subsection*{Fonctionnalités principales}
+\subsection{Pourquoi adopter le DevOps ?}
 
-\begin{itemize}
-    \item Déploiement automatique des applications
-    \item Gestion de la mise à l’échelle
-    \item Surveillance de l’état de l’application
-    \item Intégration avec EC2, ELB, Auto Scaling et CloudWatch
-\end{itemize}
+L'adoption du DevOps répond à plusieurs objectifs stratégiques pour les organisations :
 
-\section{Description de l’activité}
+\paragraph{Maximisation de la productivité} L'unification des équipes de développement et d'opérations permet d'éliminer les frictions et d'accélérer les processus de livraison.
 
-L’activité s’est déroulée selon les étapes suivantes :
+\paragraph{Simplification du cycle de vie} Le cycle de production logicielle devient plus fluide, avec des transitions automatisées entre les différentes phases.
+
+\paragraph{Programmabilité et dynamisme} Chaque phase du développement devient programmable, permettant une adaptation rapide aux changements.
+
+\paragraph{Amélioration de la fréquence des livraisons} Les déploiements peuvent être effectués plusieurs fois par jour au lieu de quelques fois par an.
+
+\paragraph{Optimisation de la prévisibilité et de la sécurité} Les processus automatisés réduisent les erreurs humaines et améliorent la fiabilité des déploiements.
+
+\paragraph{Détection précoce des bugs} L'intégration et les tests fréquents permettent d'identifier et de corriger les problèmes rapidement.
+
+\subsection{Cycle de vie DevOps}
+
+Le cycle de vie DevOps s'articule autour de huit phases principales qui forment une boucle continue :
 
 \begin{enumerate}
-    \item Accès à un environnement Elastic Beanstalk déjà créé
-    \item Vérification de l’état de santé de l’environnement
-    \item Test de l’URL de l’application (erreur 404 attendue)
-    \item Déploiement d’une application de démonstration Tomcat
-    \item Vérification du bon fonctionnement de l’application
-    \item Consultation des paramètres de configuration
-    \item Exploration des ressources EC2 associées
+    \item \textbf{Plan} : planification des fonctionnalités et des sprints
+    \item \textbf{Code} : développement du code source
+    \item \textbf{Build} : compilation et construction des artefacts
+    \item \textbf{Test} : exécution des tests automatisés
+    \item \textbf{Release} : préparation de la version pour le déploiement
+    \item \textbf{Deploy} : déploiement dans les environnements cibles
+    \item \textbf{Operate} : exploitation et maintenance en production
+    \item \textbf{Monitor} : surveillance et collecte de métriques
 \end{enumerate}
 
-\section{Prérequis}
+Ce cycle intègre les pratiques agiles pour le développement, l'Intégration Continue (CI) pour les phases de build et test, et le Déploiement Continue (CD) pour les phases de release et deploy.
 
-Avant de commencer l’activité, les prérequis suivants sont nécessaires :
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.9, transform shape]
+    % Define colors
+    \definecolor{devcolor}{RGB}{0,120,215}
+    \definecolor{opscolor}{RGB}{107,166,64}
+    
+    % Draw infinity loop
+    \draw[line width=3pt, devcolor] (0,0) arc (90:270:1.5 and 1.5);
+    \draw[line width=3pt, devcolor] (0,-3) arc (-90:90:1.5 and 1.5);
+    \draw[line width=3pt, opscolor] (4,0) arc (90:-90:1.5 and 1.5);
+    \draw[line width=3pt, opscolor] (4,-3) arc (270:90:1.5 and 1.5);
+    
+    % DEV side labels
+    \node[font=\footnotesize\bfseries] at (-1.8,-0.3) {Plan};
+    \node[font=\footnotesize\bfseries] at (-2.2,-1.5) {Code};
+    \node[font=\footnotesize\bfseries] at (-1.8,-2.7) {Build};
+    \node[font=\footnotesize\bfseries] at (0.5,-3.3) {Test};
+    
+    % OPS side labels
+    \node[font=\footnotesize\bfseries] at (3.5,-3.3) {Release};
+    \node[font=\footnotesize\bfseries] at (5.8,-2.7) {Deploy};
+    \node[font=\footnotesize\bfseries] at (6.2,-1.5) {Operate};
+    \node[font=\footnotesize\bfseries] at (5.8,-0.3) {Monitor};
+    
+    % Center labels
+    \node[font=\large\bfseries, devcolor] at (-0.5,-1.5) {DEV};
+    \node[font=\large\bfseries, opscolor] at (4.5,-1.5) {OPS};
+    
+    % Arrows for direction
+    \draw[-{Stealth[scale=1.2]}, line width=2pt, devcolor] (-1.5,-0.1) -- (-1.5,-0.5);
+    \draw[-{Stealth[scale=1.2]}, line width=2pt, opscolor] (5.5,-2.9) -- (5.5,-2.5);
+\end{tikzpicture}
+\caption{Cycle de vie DevOps -- Boucle infinie d'amélioration continue}
+\label{fig:devops-lifecycle}
+\end{figure}
+
+\section{Le Paradigme du Continu}
+
+Le DevOps introduit la notion de continuité à chaque étape du cycle de vie du développement logiciel (SDLC). Cette approche se décline en plusieurs dimensions :
 
 \begin{itemize}
-    \item Un compte AWS actif (fourni par le lab)
-    \item Accès à la console AWS
-    \item Connaissances de base en cloud computing
-    \item Notions générales sur les applications web
+    \item \textbf{Développement Continue} : intégration régulière du code des développeurs
+    \item \textbf{Intégration Continue} : fusion et validation automatique du code
+    \item \textbf{Test Continue} : exécution automatique des tests à chaque modification
+    \item \textbf{Livraison Continue} : préparation automatique des versions déployables
+    \item \textbf{Déploiement Continue} : mise en production automatique
+    \item \textbf{Surveillance Continue} : monitoring permanent des applications en production
 \end{itemize}
 
-\section{Connexion à la console AWS}
+\section{Pipeline CI/CD}
 
-La connexion à la console AWS s’effectue comme suit :
+\subsection{Présentation générale}
+
+Un pipeline CI/CD est une chaîne automatisée qui transforme le code source en une application déployée en production. Il se compose de deux parties principales : le pipeline d'Intégration Continue (CI) et le pipeline de Déploiement Continue (CD).
+
+\subsection{Étapes du pipeline CI/CD}
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[transform shape,
+    node distance=0.6cm,
+    stage/.style={rectangle, rounded corners, draw=winblue, fill=winblue!10, text width=1.6cm, minimum height=0.9cm, align=center, font=\scriptsize\bfseries},
+    arrow/.style={-{Stealth[scale=0.7]}, thick, winblue}
+]
+    % CI Pipeline
+    \node[stage] (commit) {Commit\\Changes};
+    \node[stage, right=of commit] (repo) {Code\\Repository};
+    \node[stage, right=of repo] (build) {Run\\Build};
+    \node[stage, right=of build] (test) {Test\\Artifacts};
+    \node[stage, right=of test] (deliver) {Deliver\\Artifacts};
+    
+    % CD Pipeline
+    \node[stage, right=0.8cm of deliver, fill=green!10, draw=green!60!black] (staging) {Deploy to\\Staging};
+    \node[stage, right=of staging, fill=green!10, draw=green!60!black] (integration) {Integration\\Tests};
+    \node[stage, right=of integration, fill=green!10, draw=green!60!black] (approval) {Approval};
+    \node[stage, right=of approval, fill=green!10, draw=green!60!black] (prod) {Deploy to\\Production};
+    
+    % Arrows
+    \draw[arrow] (commit) -- (repo);
+    \draw[arrow] (repo) -- (build);
+    \draw[arrow] (build) -- (test);
+    \draw[arrow] (test) -- (deliver);
+    \draw[arrow] (deliver) -- (staging);
+    \draw[arrow] (staging) -- (integration);
+    \draw[arrow] (integration) -- (approval);
+    \draw[arrow] (approval) -- (prod);
+    
+    % Labels
+    \node[above=0.6cm of build, font=\bfseries\small, winblue] {CI -- Intégration Continue};
+    \node[above=0.6cm of integration, font=\bfseries\small, green!60!black] {CD -- Déploiement Continue};
+    
+    % Braces
+    \draw[decorate, decoration={brace, amplitude=8pt, raise=4pt}, winblue, thick] (commit.north west) -- (deliver.north east);
+    \draw[decorate, decoration={brace, amplitude=8pt, raise=4pt}, green!60!black, thick] (staging.north west) -- (prod.north east);
+\end{tikzpicture}%
+}
+\caption{Architecture d'un pipeline CI/CD complet}
+\label{fig:cicd-pipeline}
+\end{figure}
+
+Le pipeline complet comprend les étapes suivantes :
+
+\paragraph{Phase CI (Intégration Continue)}
+\begin{enumerate}
+    \item \textbf{Commit Changes} : le développeur pousse ses modifications dans le dépôt
+    \item \textbf{Code Repository} : le système de gestion de versions stocke le code (Git, GitLab, GitHub)
+    \item \textbf{Run Build} : compilation du code et création des artefacts
+    \item \textbf{Test Artifacts} : exécution des tests unitaires et d'intégration
+    \item \textbf{Deliver Artifacts} : stockage des artefacts validés dans un registre (Container Registry, Artifact Registry)
+\end{enumerate}
+
+\paragraph{Phase CD (Déploiement Continue)}
+\begin{enumerate}
+    \item \textbf{Deploy to Staging} : déploiement dans un environnement de pré-production
+    \item \textbf{Run Integration Tools} : tests d'intégration et de performance
+    \item \textbf{Approval} : validation (manuelle ou automatique) avant la production
+    \item \textbf{Deploy to Production} : déploiement dans l'environnement de production
+\end{enumerate}
+
+\section{Intégration Continue (CI)}
+
+\subsection{Définition et principes}
+
+\begin{definitionbox}{Intégration Continue}
+L'Intégration Continue est une pratique DevOps consistant à intégrer fréquemment le code dans un dépôt partagé. Chaque intégration déclenche automatiquement un build et des tests, permettant de détecter rapidement les problèmes.
+\end{definitionbox}
+
+\subsection{Principes fondamentaux de la CI}
+
+Les principes essentiels de l'Intégration Continue incluent :
+
+\begin{itemize}
+    \item \textbf{Commits fréquents} : les développeurs intègrent leur code plusieurs fois par jour
+    \item \textbf{Dépôt central} : utilisation d'un système de gestion de versions comme Git
+    \item \textbf{Build automatique} : chaque commit déclenche une compilation automatique
+    \item \textbf{Tests automatisés} : exécution systématique de la suite de tests
+    \item \textbf{Intégration rapide} : feedback rapide sur la qualité du code
+\end{itemize}
+
+\subsection{Importance de la CI}
+
+L'Intégration Continue apporte plusieurs bénéfices majeurs :
+
+\begin{itemize}
+    \item \textbf{Détection précoce des bugs} : les problèmes sont identifiés immédiatement après leur introduction
+    \item \textbf{Réduction des conflits de code} : les intégrations fréquentes minimisent les conflits de merge
+    \item \textbf{Amélioration de la qualité du logiciel} : les tests automatiques garantissent un niveau de qualité constant
+    \item \textbf{Feedback rapide} : les développeurs reçoivent immédiatement un retour sur leurs modifications
+\end{itemize}
+
+\subsection{Outils d'Intégration Continue}
+
+Plusieurs outils sont disponibles pour mettre en place l'Intégration Continue :
+
+\begin{itemize}
+    \item \textbf{Jenkins} : plateforme open-source populaire et extensible
+    \item \textbf{GitHub Actions} : intégré nativement à GitHub
+    \item \textbf{GitLab CI} : solution intégrée à GitLab
+    \item \textbf{Azure DevOps} : plateforme complète de Microsoft
+    \item \textbf{SonarQube} : outil spécialisé dans l'analyse de la qualité du code
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.8, transform shape]
+    % Tool boxes
+    \definecolor{jenkins}{RGB}{212,70,56}
+    \definecolor{github}{RGB}{36,41,46}
+    \definecolor{gitlab}{RGB}{252,109,38}
+    \definecolor{azure}{RGB}{0,120,212}
+    
+    % Jenkins
+    \node[rectangle, rounded corners, draw=jenkins, fill=jenkins!10, minimum width=2.2cm, minimum height=1cm, font=\scriptsize\bfseries] (jenkins) at (0, 0) {Jenkins};
+    \node[font=\tiny, text width=2cm, align=center] at (0, -0.8) {Open Source\\Extensible};
+    
+    % GitHub Actions
+    \node[rectangle, rounded corners, draw=github, fill=github!10, minimum width=2.2cm, minimum height=1cm, font=\scriptsize\bfseries] (gh) at (2.8, 0) {GitHub Actions};
+    \node[font=\tiny, text width=2cm, align=center] at (2.8, -0.8) {Intégré GitHub\\YAML Config};
+    
+    % GitLab CI
+    \node[rectangle, rounded corners, draw=gitlab, fill=gitlab!10, minimum width=2.2cm, minimum height=1cm, font=\scriptsize\bfseries] (gl) at (5.6, 0) {GitLab CI/CD};
+    \node[font=\tiny, text width=2cm, align=center] at (5.6, -0.8) {Solution complète\\Auto DevOps};
+    
+    % Azure DevOps
+    \node[rectangle, rounded corners, draw=azure, fill=azure!10, minimum width=2.2cm, minimum height=1cm, font=\scriptsize\bfseries] (az) at (8.4, 0) {Azure DevOps};
+    \node[font=\tiny, text width=2cm, align=center] at (8.4, -0.8) {Microsoft\\Cloud Native};
+    
+    % Title
+    \node[font=\bfseries\small] at (4.2, 1.3) {Outils CI/CD Populaires};
+\end{tikzpicture}
+\caption{Principaux outils d'Intégration Continue}
+\label{fig:ci-tools}
+\end{figure}
+
+\section{Déploiement Continue (CD)}
+
+\subsection{Définition}
+
+\begin{definitionbox}{Déploiement Continue}
+Le Déploiement Continue est une extension de l'Intégration Continue qui automatise le déploiement du logiciel en production. Chaque changement validé passe automatiquement à travers le pipeline et est déployé en production sans intervention humaine.
+\end{definitionbox}
+
+\subsection{Continuous Delivery vs Continuous Deployment}
+
+Il est important de distinguer deux concepts souvent confondus :
+
+\paragraph{Continuous Delivery (Livraison Continue)}
+\begin{itemize}
+    \item Le processus est automatisé jusqu'à la phase de déploiement en production
+    \item Une intervention humaine est nécessaire pour valider le déploiement final
+    \item Séquence : Code $\rightarrow$ Build $\rightarrow$ Test $\rightarrow$ Approve $\rightarrow$ Release $\rightarrow$ \textbf{[Manuel]} $\rightarrow$ Deploy
+\end{itemize}
+
+\paragraph{Continuous Deployment (Déploiement Continue)}
+\begin{itemize}
+    \item Le déploiement en production est entièrement automatisé
+    \item Aucune validation humaine n'est nécessaire
+    \item Séquence : Code $\rightarrow$ Build $\rightarrow$ Test $\rightarrow$ Approve $\rightarrow$ Release $\rightarrow$ \textbf{[Auto]} $\rightarrow$ Deploy
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[transform shape,
+    stepbox/.style={rectangle, rounded corners, draw=winblue, fill=winblue!10, minimum width=1.3cm, minimum height=0.7cm, font=\tiny\bfseries},
+    arrow/.style={-{Stealth[scale=0.6]}, thick, winblue}
+]
+    % Continuous Delivery
+    \node[font=\scriptsize\bfseries] at (-1.2, 1) {Continuous Delivery:};
+    \node[stepbox] (cd1) at (1, 1) {Code};
+    \node[stepbox] (cd2) at (2.5, 1) {Build};
+    \node[stepbox] (cd3) at (4, 1) {Test};
+    \node[stepbox] (cd4) at (5.5, 1) {Release};
+    \node[stepbox, fill=orange!20, draw=orange] (cd5) at (7, 1) {Manuel};
+    \node[stepbox] (cd6) at (8.5, 1) {Deploy};
+    
+    \draw[arrow] (cd1) -- (cd2);
+    \draw[arrow] (cd2) -- (cd3);
+    \draw[arrow] (cd3) -- (cd4);
+    \draw[arrow, orange] (cd4) -- (cd5);
+    \draw[arrow] (cd5) -- (cd6);
+    
+    % Continuous Deployment
+    \node[font=\scriptsize\bfseries] at (-1.2, -0.5) {Continuous Deployment:};
+    \node[stepbox] (cp1) at (1, -0.5) {Code};
+    \node[stepbox] (cp2) at (2.5, -0.5) {Build};
+    \node[stepbox] (cp3) at (4, -0.5) {Test};
+    \node[stepbox] (cp4) at (5.5, -0.5) {Release};
+    \node[stepbox, fill=green!20, draw=green!60!black] (cp5) at (7, -0.5) {Auto};
+    \node[stepbox] (cp6) at (8.5, -0.5) {Deploy};
+    
+    \draw[arrow] (cp1) -- (cp2);
+    \draw[arrow] (cp2) -- (cp3);
+    \draw[arrow] (cp3) -- (cp4);
+    \draw[arrow, green!60!black] (cp4) -- (cp5);
+    \draw[arrow] (cp5) -- (cp6);
+    
+    % Annotations
+    \node[font=\tiny, orange] at (7, 1.5) {Validation humaine};
+    \node[font=\tiny, green!60!black] at (7, 0) {Automatique};
+\end{tikzpicture}%
+}
+\caption{Comparaison: Continuous Delivery vs Continuous Deployment}
+\label{fig:cd-vs-cd}
+\end{figure}
+
+\subsection{Processus de déploiement}
+
+Le processus de Déploiement Continue comprend plusieurs étapes :
 
 \begin{enumerate}
-    \item Lancement du lab via le bouton \textit{Start Lab}
-    \item Attente de l’activation complète de l’environnement AWS
-    \item Accès à la console AWS via le lien fourni
+    \item Récupération des artefacts validés depuis le registre
+    \item Déploiement automatique dans l'environnement de staging
+    \item Exécution des tests d'intégration et de performance
+    \item Validation (automatique ou manuelle selon le mode choisi)
+    \item Déploiement en production selon la stratégie définie
 \end{enumerate}
 
-\subsection*{Capture 1 : Page de connexion AWS}
+\section{Stratégies de Déploiement}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{aws_login.png}
-    \caption{Page de connexion à la console AWS}
-\end{figure}
+\subsection{Déploiement Blue-Green}
 
-Cette capture illustre l’interface permettant d’accéder à la console AWS.
+Le déploiement Blue-Green utilise deux environnements de production identiques :
 
-\subsection*{Capture 2 : Tableau de bord AWS}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{aws_console.png}
-    \caption{Tableau de bord AWS après connexion}
-\end{figure}
-
-Le tableau de bord permet d’accéder aux différents services AWS, notamment Elastic Beanstalk.
-
-\section{Utilisation d’AWS Elastic Beanstalk}
-
-\subsection*{Création de l’application}
-
-L’application Elastic Beanstalk est créée automatiquement dans l’environnement du lab.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{eb_application.png}
-    \caption{Création de l’application Elastic Beanstalk}
-\end{figure}
-
-\subsection*{Configuration de l’environnement}
-
-L’environnement Elastic Beanstalk est configuré avec des instances EC2, un groupe Auto Scaling et un équilibreur de charge.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{eb_configuration.png}
-    \caption{Configuration de l’environnement Elastic Beanstalk}
-\end{figure}
-
-\subsection*{Déploiement de l’application}
-
-Une application de démonstration Tomcat est déployée avec succès.
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.85\textwidth]{eb_deployment.png}
-    \caption{Déploiement réussi de l’application}
-\end{figure}
-
-\section{Suite de l’activité : AWS Cloud Foundations – Activities}
-
-Cette activité s’inscrit dans le parcours \textbf{AWS Cloud Foundations} en introduisant :
-
+\paragraph{Principe de fonctionnement}
 \begin{itemize}
-    \item Les services managés AWS
-    \item Le modèle PaaS
-    \item La gestion automatisée de l’infrastructure
-    \item Les bases du déploiement applicatif dans le cloud
+    \item \textbf{Blue} : environnement de production actuel servant le trafic utilisateur
+    \item \textbf{Green} : environnement où la nouvelle version est déployée
+    \item La nouvelle version est testée sur Green pendant que Blue reste actif
+    \item Basculement instantané du trafic de Blue vers Green après validation
+    \item Blue devient l'environnement de secours en cas de problème
 \end{itemize}
 
-Elle prépare à des activités plus avancées telles que le déploiement de microservices ou l’utilisation de services comme Amazon ECS et AWS Lambda.
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.85, transform shape,
+    server/.style={rectangle, rounded corners, draw=darkgray, minimum width=3cm, minimum height=1.5cm, align=center, font=\footnotesize\bfseries},
+    lb/.style={ellipse, draw=winblue, fill=winblue!20, minimum width=2.5cm, minimum height=1cm, font=\footnotesize\bfseries},
+    arrow/.style={-{Stealth[scale=0.8]}, thick}
+]
+    % Step 1
+    \node[font=\bfseries] at (0, 2) {Étape 1: État initial};
+    \node[lb] (lb1) at (0, 1) {Load Balancer};
+    \node[server, fill=blue!20] (blue1) at (-2, -0.8) {Blue\\(v1.0 - Actif)};
+    \node[server, fill=green!20] (green1) at (2, -0.8) {Green\\(Inactif)};
+    \draw[arrow, blue!60] (lb1) -- (blue1);
+    \draw[arrow, dashed, gray] (lb1) -- (green1);
+    
+    % Step 2
+    \node[font=\bfseries] at (7, 2) {Étape 2: Déploiement v2.0};
+    \node[lb] (lb2) at (7, 1) {Load Balancer};
+    \node[server, fill=blue!20] (blue2) at (5, -0.8) {Blue\\(v1.0 - Actif)};
+    \node[server, fill=green!40] (green2) at (9, -0.8) {Green\\(v2.0 - Test)};
+    \draw[arrow, blue!60] (lb2) -- (blue2);
+    \draw[arrow, dashed, green!60!black] (lb2) -- (green2);
+    
+    % Step 3
+    \node[font=\bfseries] at (0, -3) {Étape 3: Basculement};
+    \node[lb] (lb3) at (0, -4) {Load Balancer};
+    \node[server, fill=blue!10] (blue3) at (-2, -5.8) {Blue\\(v1.0 - Backup)};
+    \node[server, fill=green!40] (green3) at (2, -5.8) {Green\\(v2.0 - Actif)};
+    \draw[arrow, dashed, gray] (lb3) -- (blue3);
+    \draw[arrow, green!60!black, thick] (lb3) -- (green3);
+    
+    % Users icon
+    \node at (0, 2.8) {\includegraphics[width=0.4cm]{example-image}};
+    \node[font=\scriptsize] at (0, 3.2) {Utilisateurs};
+    \node at (7, 2.8) {\includegraphics[width=0.4cm]{example-image}};
+    \node[font=\scriptsize] at (7, 3.2) {Utilisateurs};
+    \node at (0, -2.2) {\includegraphics[width=0.4cm]{example-image}};
+    \node[font=\scriptsize] at (0, -1.8) {Utilisateurs};
+\end{tikzpicture}
+\caption{Stratégie de déploiement Blue-Green}
+\label{fig:blue-green}
+\end{figure}
 
-\section*{Conclusion}
+\paragraph{Avantages}
+\begin{itemize}
+    \item \textbf{Rollback rapide} : retour à la version précédente quasi-instantané
+    \item \textbf{Zéro interruption} : pas de downtime pendant le déploiement
+    \item \textbf{Tests en conditions réelles} : validation sur un environnement identique à la production
+\end{itemize}
 
-Cette activité a permis de découvrir AWS Elastic Beanstalk comme solution PaaS facilitant le déploiement et la gestion d’applications web.  
-Elle met en évidence la puissance des services managés AWS et leur capacité à réduire la complexité opérationnelle pour les développeurs.
+\subsection{Déploiement Canary}
+
+Le déploiement Canary (en référence aux canaris utilisés dans les mines) introduit progressivement la nouvelle version :
+
+\paragraph{Principe de fonctionnement}
+\begin{itemize}
+    \item La nouvelle version est déployée pour un petit pourcentage d'utilisateurs (ex: 5\%)
+    \item Surveillance étroite du comportement et des métriques d'erreur
+    \item Augmentation progressive du trafic vers la nouvelle version (10\%, 25\%, 50\%, 100\%)
+    \item Possibilité d'arrêter le déploiement à tout moment si des problèmes sont détectés
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.85, transform shape]
+    % Define bar chart for traffic distribution
+    \definecolor{oldversion}{RGB}{100,100,100}
+    \definecolor{newversion}{RGB}{0,120,215}
+    
+    % Phase 1: 5%
+    \node[font=\bfseries\footnotesize] at (0, 3) {Phase 1};
+    \fill[oldversion] (0, 0) rectangle (1, 2.85);
+    \fill[newversion] (0, 2.85) rectangle (1, 3);
+    \node[font=\tiny, white] at (0.5, 1.4) {95\%};
+    \node[font=\tiny, white] at (0.5, 2.92) {5\%};
+    \node[font=\scriptsize] at (0.5, -0.3) {v1.0};
+    
+    % Phase 2: 25%
+    \node[font=\bfseries\footnotesize] at (2, 3) {Phase 2};
+    \fill[oldversion] (1.5, 0) rectangle (2.5, 2.25);
+    \fill[newversion] (1.5, 2.25) rectangle (2.5, 3);
+    \node[font=\tiny, white] at (2, 1.1) {75\%};
+    \node[font=\tiny, white] at (2, 2.62) {25\%};
+    \node[font=\scriptsize] at (2, -0.3) {v1.0/v2.0};
+    
+    % Phase 3: 50%
+    \node[font=\bfseries\footnotesize] at (4, 3) {Phase 3};
+    \fill[oldversion] (3.5, 0) rectangle (4.5, 1.5);
+    \fill[newversion] (3.5, 1.5) rectangle (4.5, 3);
+    \node[font=\tiny, white] at (4, 0.75) {50\%};
+    \node[font=\tiny, white] at (4, 2.25) {50\%};
+    \node[font=\scriptsize] at (4, -0.3) {v1.0/v2.0};
+    
+    % Phase 4: 100%
+    \node[font=\bfseries\footnotesize] at (6, 3) {Phase 4};
+    \fill[newversion] (5.5, 0) rectangle (6.5, 3);
+    \node[font=\tiny, white] at (6, 1.5) {100\%};
+    \node[font=\scriptsize] at (6, -0.3) {v2.0};
+    
+    % Arrows between phases
+    \draw[-{Stealth}, thick, gray] (1.1, 1.5) -- (1.4, 1.5);
+    \draw[-{Stealth}, thick, gray] (2.6, 1.5) -- (3.4, 1.5);
+    \draw[-{Stealth}, thick, gray] (4.6, 1.5) -- (5.4, 1.5);
+    
+    % Legend
+    \fill[oldversion] (7.5, 2.5) rectangle (8, 2.8);
+    \node[font=\scriptsize, right] at (8.1, 2.65) {Version actuelle (v1.0)};
+    \fill[newversion] (7.5, 2) rectangle (8, 2.3);
+    \node[font=\scriptsize, right] at (8.1, 2.15) {Nouvelle version (v2.0)};
+    
+    % Monitoring indicator
+    \node[font=\scriptsize, align=center] at (3, -1) {\textit{Surveillance continue des métriques à chaque phase}};
+\end{tikzpicture}
+\caption{Stratégie de déploiement Canary -- Augmentation progressive du trafic}
+\label{fig:canary}
+\end{figure}
+
+\paragraph{Avantages}
+\begin{itemize}
+    \item \textbf{Réduction des risques} : limitation de l'impact en cas de problème
+    \item \textbf{Détection précoce} : identification rapide des problèmes sur un sous-ensemble d'utilisateurs
+    \item \textbf{Validation progressive} : confiance croissante avant le déploiement complet
+\end{itemize}
+
+\section{Avantages du CI/CD en Génie Logiciel}
+
+L'adoption des pratiques CI/CD apporte de nombreux bénéfices aux organisations :
+
+\begin{avantagesbox}
+\begin{itemize}
+    \item \textbf{Détection précoce des bugs} : les problèmes sont identifiés et corrigés rapidement, réduisant le coût de correction
+    \item \textbf{Amélioration de la qualité du logiciel} : les tests automatisés garantissent un niveau de qualité constant
+    \item \textbf{Livraison rapide et fréquente} : réduction du time-to-market pour les nouvelles fonctionnalités
+    \item \textbf{Réduction des erreurs humaines} : l'automatisation élimine les erreurs liées aux déploiements manuels
+    \item \textbf{Automatisation des tests et des déploiements} : gain de temps considérable pour les équipes
+    \item \textbf{Meilleure collaboration} : renforcement de la communication entre développeurs, testeurs et équipes opérationnelles
+    \item \textbf{Feedback continu} : les développeurs reçoivent rapidement des retours sur la qualité de leur code
+    \item \textbf{Réduction des risques} : les déploiements fréquents contiennent moins de changements, donc moins de risques
+\end{itemize}
+\end{avantagesbox}
+
+\section{Limites et Défis}
+
+Malgré ses nombreux avantages, l'adoption du CI/CD présente également des défis :
+
+\begin{limitesbox}
+\begin{itemize}
+    \item \textbf{Coût initial de mise en place} : investissement important en temps et en ressources pour configurer les pipelines
+    \item \textbf{Complexité des pipelines CI/CD} : la maintenance et l'évolution des pipelines peuvent devenir complexes
+    \item \textbf{Dépendance à la qualité des tests automatisés} : des tests insuffisants ou de mauvaise qualité réduisent l'efficacité du CI/CD
+    \item \textbf{Courbe d'apprentissage} : les équipes doivent se former aux nouveaux outils et pratiques
+    \item \textbf{Problèmes de sécurité} : gestion des secrets, des accès et des permissions dans les pipelines
+    \item \textbf{Gestion des échecs en production} : nécessité de mettre en place des mécanismes de rollback efficaces
+    \item \textbf{Changement culturel} : résistance au changement et nécessité d'adopter une nouvelle mentalité
+\end{itemize}
+\end{limitesbox}
+
+\section{Conclusion}
+
+Le DevOps, et plus particulièrement les pratiques d'Intégration Continue et de Déploiement Continue, représentent une évolution majeure dans le développement logiciel moderne. En unifiant les équipes de développement et d'exploitation, en automatisant les processus répétitifs et en instaurant une culture du continu, le DevOps permet aux organisations de livrer des logiciels de meilleure qualité, plus rapidement et de manière plus fiable.
+
+Les pipelines CI/CD, en automatisant l'intégration, les tests et le déploiement, réduisent considérablement les risques liés aux mises en production et permettent un feedback rapide aux développeurs. Les stratégies de déploiement comme Blue-Green et Canary offrent des mécanismes sophistiqués pour minimiser l'impact des problèmes potentiels.
+
+Cependant, l'adoption du DevOps nécessite un investissement significatif en termes de temps, de ressources et de formation. Le succès d'une transformation DevOps repose non seulement sur les outils et les technologies, mais surtout sur un changement culturel profond au sein des organisations.
+
+Dans un contexte où la rapidité de livraison et la qualité des logiciels sont des avantages compétitifs majeurs, le DevOps et le CI/CD s'imposent comme des pratiques incontournables pour toute organisation souhaitant rester compétitive dans le domaine du développement logiciel.
 
 \end{document}
