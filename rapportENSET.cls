@@ -54,8 +54,6 @@
 	{\large Department of Information and Mathematics}\\
 	\vspace{0.5cm}%Espace de 0,5cm
 	{\large \bfseries{IT Engineering, Cybersecurity and Digital Trust engineering} \\ }
-	\vspace{0.2cm}%Espace de 0,5cm
-	{\large \bfseries{IT Engineering, Big Data and Cloud Computing} \\ }
 	\vspace{1cm}%Espace de 1,5cm
 	{\scshape\Large \UE \\ \sujet \par} %sous-titre
 	\vspace{1cm}%Espace de 1cm
