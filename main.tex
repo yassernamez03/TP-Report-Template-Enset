@@ -80,7 +80,7 @@
 
 \begin{document}
 %----------- Informations du rapport ---------
-\titre{Compte rendu – Lab - Enumeration with Nmap}
+\titre{Compte rendu – Lab 3 - Vulnerability Scans with Kali Tools}
 \sujet{Module : Ethical Hacking}
 \enseignant{Pr. Azeddine \textsc{KHIAT}}
 \eleves{Yasser \textsc{NAMEZ}}
@@ -93,24 +93,25 @@
 
 \section{Introduction}
 
-Ce laboratoire pratique a pour objectif d'explorer les capacités de l'outil \textbf{Nmap} (Network Mapper) dans le cadre d'une stratégie de reconnaissance active. Suite à la détection d'une activité suspecte sur la machine 10.6.6.23 du réseau DMZ, nous avons été chargés d'effectuer une énumération complète pour identifier les services actifs et les vulnérabilités potentielles.
+Ce laboratoire pratique explore les outils d'analyse des vulnérabilités réseau disponibles dans Kali Linux, notamment \textbf{Nmap} avec ses scripts NSE et \textbf{Greenbone Vulnerability Management (GVM)}. Suite à la détection d'un trafic inhabituel provenant de la machine 10.6.6.23, une analyse approfondie des vulnérabilités a été commandée pour identifier les failles de sécurité potentielles.
 
 \begin{objectifbox}
 \begin{itemize}
-    \item Explorer les fonctionnalités de Nmap
-    \item Effectuer des analyses de base et avancées
-    \item Identifier les services vulnérables
-    \item Détecter les problèmes de configuration de sécurité
+    \item Effectuer des analyses réseau avec Nmap et ses scripts NSE
+    \item Utiliser le script Vulners pour identifier les CVE
+    \item Déployer GVM pour une analyse complète des vulnérabilités
+    \item Comparer les résultats des deux outils d'analyse
+    \item Évaluer les vulnérabilités critiques et proposer des recommandations
 \end{itemize}
 \end{objectifbox}
 
 \subsection{Environnement de laboratoire}
 
 \begin{itemize}
-    \item \textbf{Système d'analyse :} Kali Linux (10.6.6.0/24)
-    \item \textbf{Cible :} Machine suspecte (10.6.6.23)
-    \item \textbf{Réseau :} DMZ 10.6.6.0/24
-    \item \textbf{Outil principal :} Nmap 7.93
+    \item \textbf{Système d'analyse :} Kali Linux (réseau 10.6.6.0/24)
+    \item \textbf{Cible :} Machine suspecte (10.6.6.23 / gravemind.vm)
+    \item \textbf{Outils principaux :} Nmap 7.93 avec scripts NSE, GVM
+    \item \textbf{Base de données :} CVE et NVD (National Vulnerability Database)
 \end{itemize}
 
 \begin{figure}[H]
@@ -120,367 +121,349 @@ Ce laboratoire pratique a pour objectif d'explorer les capacités de l'outil \te
     \label{fig:topologie}
 \end{figure}
 
-\section{Partie 1 : Exploration de Nmap}
+\section{Partie 1 : Analyses Nmap avec scripts de vulnérabilités}
 
-\subsection{Vérification de l'environnement}
+\subsection{Vérification de la connectivité}
 
-Avant de commencer l'analyse, nous avons vérifié la configuration du système Kali Linux.
-
-\begin{commandbox}
-\begin{lstlisting}
-# Verification de l'interface reseau
-ifconfig
-
-# Verification de la version de Nmap
-nmap -V
-\end{lstlisting}
-\end{commandbox}
-
-\begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.75\textwidth]{screenshot_nmap_version.png}}
-    \caption{Vérification de la version de Nmap}
-    \label{fig:nmap_version}
-\end{figure}
-
-\subsection{Options Nmap courantes}
-
-Le tableau ci-dessous présente les principales options de Nmap utilisées dans ce laboratoire :
-
-\begin{table}[H]
-\centering
-\small
-\begin{tabular}{|p{3cm}|p{10cm}|}
-\hline
-\textbf{Option} & \textbf{Description} \\
-\hline
-\texttt{-A} & Analyse agressive : détection OS, version, scripts et traceroute \\
-\hline
-\texttt{-O} & Active la détection du système d'exploitation \\
-\hline
-\texttt{-p <ports>} & Analyse des ports ou plages de ports spécifiques \\
-\hline
-\texttt{-sF} & Effectue une analyse FIN TCP \\
-\hline
-\texttt{-sn} & Effectue une analyse de découverte d'hôtes (ping scan) \\
-\hline
-\texttt{-sS} & Effectue une analyse TCP SYN (stealth scan) \\
-\hline
-\texttt{-sT} & Effectue une analyse TCP Connect \\
-\hline
-\texttt{-sV} & Sonde les ports pour déterminer les versions de services \\
-\hline
-\texttt{-T<0-5>} & Définit le timing (0=lent, 5=rapide) \\
-\hline
-\texttt{-v} & Mode verbeux (détails supplémentaires) \\
-\hline
-\texttt{--open} & Affiche uniquement les ports ouverts \\
-\hline
-\end{tabular}
-\caption{Options Nmap principales}
-\label{tab:nmap_options}
-\end{table}
-
-\section{Partie 2 : Analyses Nmap de base}
-
-\subsection{Découverte des hôtes actifs (Host Discovery)}
-
-La première étape consiste à identifier tous les hôtes actifs dans le réseau DMZ.
+Avant de commencer toute analyse, il est essentiel de vérifier que l'hôte cible est accessible sur le réseau.
 
 \begin{commandbox}
 \begin{lstlisting}
-# Analyse de decouverte du reseau DMZ
-nmap -sn 10.6.6.0/24
+# Test de connectivite avec la cible
+ping -c5 10.6.6.23
 \end{lstlisting}
 \end{commandbox}
 
 \begin{resultatbox}
-\textbf{Nombre d'hôtes actifs détectés :} 7 hôtes (incluant le système Kali Linux)
+\textbf{État de la cible :} La machine 10.6.6.23 répond aux requêtes ICMP. L'hôte est actif et accessible sur le réseau.
 \end{resultatbox}
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.80\textwidth]{screenshot_host_discovery.png}}
-    \caption{Résultat de l'analyse de découverte des hôtes}
-    \label{fig:host_discovery}
+    \fbox{\includegraphics[width=0.75\textwidth]{screenshot_ping.png}}
+    \caption{Test de connectivité avec la cible}
+    \label{fig:ping}
 \end{figure}
 
-\subsection{Analyse des ports ouverts}
+\subsection{Identification des ports et services ouverts}
 
-Nous effectuons maintenant une analyse par défaut sur la cible identifiée (10.6.6.23).
+L'option \texttt{-sV} de Nmap effectue une détection de version des services pour identifier précisément les applications en écoute.
 
 \begin{commandbox}
 \begin{lstlisting}
-# Analyse par defaut des 1000 ports TCP les plus courants
-nmap 10.6.6.23
+# Analyse des ports avec detection de version
+nmap -sV 10.6.6.23
 \end{lstlisting}
 \end{commandbox}
 
 \begin{resultatbox}
 \textbf{Ports ouverts détectés :}
 \begin{itemize}
-    \item Port 21 (FTP)
-    \item Port 22 (SSH)
-    \item Port 53 (DNS)
-    \item Port 80 (HTTP)
-    \item Port 139 (NetBIOS-SSN)
-    \item Port 445 (Microsoft-DS/SMB)
+    \item \textbf{Port 21 :} FTP - vsftpd 3.0.3
+    \item \textbf{Port 22 :} SSH - OpenSSH 7.9p1 Debian 10+deb10u2
+    \item \textbf{Port 53 :} DNS - ISC BIND 9.11.5-P4-5.1+deb10u5
+    \item \textbf{Port 80 :} HTTP - nginx 1.14.2
+    \item \textbf{Port 139 :} NetBIOS-SSN - Samba smbd 3.X - 4.X
+    \item \textbf{Port 445 :} Microsoft-DS - Samba smbd 3.X - 4.X
 \end{itemize}
+\textbf{Total :} 6 ports TCP ouverts
 \end{resultatbox}
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.80\textwidth]{screenshot_port_scan.png}}
-    \caption{Ports ouverts sur la machine cible}
-    \label{fig:port_scan}
+    \fbox{\includegraphics[width=0.85\textwidth]{screenshot_nmap_sv.png}}
+    \caption{Résultats de l'analyse Nmap avec détection de version}
+    \label{fig:nmap_sv}
 \end{figure}
-
-\begin{definitionbox}{États des ports Nmap}
-\begin{itemize}
-    \item \textbf{Open :} Un service écoute sur ce port (réponse SYN-ACK)
-    \item \textbf{Closed :} Aucun service n'écoute (réponse RST)
-    \item \textbf{Filtered :} Port filtré par un pare-feu (pas de réponse)
-\end{itemize}
-\end{definitionbox}
 
 \subsection{Détection du système d'exploitation}
 
-L'option \texttt{-O} nécessite les privilèges root pour fonctionner.
+L'option \texttt{-O} permet d'identifier le système d'exploitation de la cible en analysant les signatures TCP/IP.
 
 \begin{commandbox}
 \begin{lstlisting}
-# Detection du systeme d'exploitation
+# Detection du systeme d'exploitation (necessite root)
 sudo nmap -O 10.6.6.23
 \end{lstlisting}
 \end{commandbox}
 
 \begin{resultatbox}
-\textbf{Système d'exploitation détecté :} Linux 4.15 - 5.8
+\textbf{Système d'exploitation identifié :} Linux 4.15 - 5.6
+\\
+\textbf{Type :} Système Unix/Linux (probablement Debian)
 \end{resultatbox}
 
 \begin{figure}[H]
     \centering
     \fbox{\includegraphics[width=0.80\textwidth]{screenshot_os_detection.png}}
-    \caption{Détection du système d'exploitation}
+    \caption{Identification du système d'exploitation}
     \label{fig:os_detection}
 \end{figure}
 
-\section{Analyse approfondie des services}
+\section{Analyse des vulnérabilités avec le script Vulners}
 
-\subsection{Énumération du service FTP (Port 21)}
+\subsection{Présentation du script Vulners}
 
-Nous analysons maintenant le service FTP en détail pour identifier sa version et ses vulnérabilités.
+\begin{definitionbox}{Script Vulners}
+Le script Vulners est un script NSE (Nmap Scripting Engine) qui interroge la base de données Vulners.com pour identifier les vulnérabilités connues (CVE) associées aux services détectés. Il utilise les identifiants CPE (Common Platform Enumeration) pour rechercher des failles de sécurité documentées.
+\end{definitionbox}
 
-\begin{commandbox}
-\begin{lstlisting}
-# Analyse du service FTP avec detection de version
-nmap -v -p21 -sV -T4 10.6.6.23
-\end{lstlisting}
-\end{commandbox}
+\subsection{Exécution du scan de vulnérabilités}
 
-\begin{resultatbox}
-\textbf{Service FTP identifié :} vsftpd 3.0.3
-\end{resultatbox}
-
-\begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.80\textwidth]{screenshot_ftp_version.png}}
-    \caption{Détection de la version du service FTP}
-    \label{fig:ftp_version}
-\end{figure}
-
-\subsection{Analyse agressive du FTP}
-
-L'analyse agressive avec l'option \texttt{-A} révèle des informations critiques.
+Nous lançons maintenant une analyse complète avec le script Vulners en filtrant les CVE ayant un score CVSS d'au moins 4.0.
 
 \begin{commandbox}
 \begin{lstlisting}
-# Analyse agressive du service FTP
-nmap -A -p21 10.6.6.23
+# Analyse avec le script Vulners (score CVSS >= 4.0)
+nmap -sV --script vulners --script-args mincvss=4 10.6.6.23
 \end{lstlisting}
 \end{commandbox}
 
 \begin{alertbox}
-\textbf{Vulnérabilité critique détectée :}
-\begin{itemize}
-    \item Connexion FTP anonyme autorisée (Anonymous FTP)
-    \item 4 fichiers accessibles sans authentification
-    \item Fichiers détectés : file1.txt, file2.txt, file3.txt, supersecretfile.txt
-\end{itemize}
-\end{alertbox}
-
-\begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.85\textwidth]{screenshot_ftp_anonymous.png}}
-    \caption{Détection de l'accès FTP anonyme et fichiers accessibles}
-    \label{fig:ftp_anonymous}
-\end{figure}
-
-\section{Analyse des services SMB}
-
-\subsection{Scan initial des ports SMB}
-
-Les ports 139 et 445 indiquent la présence du protocole SMB (Server Message Block).
-
-\begin{commandbox}
-\begin{lstlisting}
-# Analyse des ports SMB avec scripts par defaut
-nmap -A -p139,445 10.6.6.23
-\end{lstlisting}
-\end{commandbox}
-
-\begin{resultatbox}
-\textbf{Informations SMB détectées :}
-\begin{itemize}
-    \item Service : Samba smbd 4.9.5-Debian
-    \item Groupe de travail : WORKGROUP
-    \item Nom NetBIOS : 868CF29B394C
-    \item Signature de message : désactivée (dangereux)
-\end{itemize}
-\end{resultatbox}
-
-\begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.85\textwidth]{screenshot_smb_basic.png}}
-    \caption{Informations de base sur les services SMB}
-    \label{fig:smb_basic}
-\end{figure}
-
-\subsection{Énumération des utilisateurs SMB}
-
-Utilisation des scripts NSE (Nmap Scripting Engine) pour énumérer les utilisateurs.
-
-\begin{commandbox}
-\begin{lstlisting}
-# Enumeration des utilisateurs SMB
-nmap --script smb-enum-users.nse -p139,445 10.6.6.23
-\end{lstlisting}
-\end{commandbox}
-
-\begin{resultatbox}
-\textbf{Utilisateurs SMB découverts :}
-\begin{itemize}
-    \item arbitre
-    \item masterchief
-\end{itemize}
-Total : 2 utilisateurs
-\end{resultatbox}
-
-\begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.80\textwidth]{screenshot_smb_users.png}}
-    \caption{Énumération des utilisateurs SMB}
-    \label{fig:smb_users}
-\end{figure}
-
-\subsection{Énumération des partages réseau}
-
-Recherche de partages réseau publics ou mal configurés.
-
-\begin{commandbox}
-\begin{lstlisting}
-# Enumeration des partages SMB
-nmap --script smb-enum-shares.nse -p445 10.6.6.23
-\end{lstlisting}
-\end{commandbox}
-
-\begin{resultatbox}
-\textbf{Partages réseau découverts :}
-\begin{enumerate}
-    \item \texttt{\textbackslash\textbackslash 10.6.6.23\textbackslash IPC\$} (partage caché système)
-    \item \texttt{\textbackslash\textbackslash 10.6.6.23\textbackslash print\$} (pilotes d'imprimante)
-    \item \texttt{\textbackslash\textbackslash 10.6.6.23\textbackslash workfiles} (fichiers de travail)
-\end{enumerate}
-\textbf{Partages masqués :} 2 (IPC\$ et print\$)
-\end{resultatbox}
-
-\begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.85\textwidth]{screenshot_smb_shares.png}}
-    \caption{Énumération des partages réseau SMB}
-    \label{fig:smb_shares}
-\end{figure}
-
-\begin{alertbox}
-\textbf{Vulnérabilité critique détectée :}
+\textbf{Service vulnérable identifié :} OpenSSH 7.9p1
 \\
-Tous les partages ont un accès anonyme en LECTURE/ÉCRITURE, ce qui représente un risque de sécurité majeur. Des utilisateurs non authentifiés peuvent lire et modifier des fichiers sensibles.
+Le service SSH présente plusieurs vulnérabilités exploitables avec des scores CVSS variant de 4.0 à 5.8, incluant des exploits publiquement disponibles.
 \end{alertbox}
 
-\section{Synthèse des commandes}
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.90\textwidth]{screenshot_vulners_scan.png}}
+    \caption{Résultats du script Vulners sur l'hôte cible}
+    \label{fig:vulners}
+\end{figure}
+
+\subsection{Analyse détaillée des CVE découvertes}
+
+Le tableau ci-dessous présente les vulnérabilités critiques identifiées par le script Vulners :
 
 \begin{table}[H]
 \centering
 \small
-\begin{tabular}{|p{7cm}|p{6.5cm}|}
+\begin{tabular}{|p{3.5cm}|p{1.5cm}|p{8cm}|}
 \hline
-\textbf{Commande} & \textbf{Objectif} \\
+\textbf{CVE} & \textbf{Score} & \textbf{Description} \\
 \hline
-\texttt{nmap -sn 10.6.6.0/24} & Découverte des hôtes actifs \\
+CVE-2019-6111 & 5.8 & Vulnérabilité dans le client SCP de OpenSSH permettant l'écrasement de fichiers arbitraires \\
 \hline
-\texttt{nmap 10.6.6.23} & Scan des ports par défaut \\
+CVE-2021-41617 & 4.4 & Faille dans la gestion des clés SSH permettant une escalade de privilèges locale \\
 \hline
-\texttt{sudo nmap -O 10.6.6.23} & Détection du système d'exploitation \\
+CVE-2019-16905 & 4.4 & Vulnérabilité de type memory safety dans OpenSSH \\
 \hline
-\texttt{nmap -v -p21 -sV -T4 10.6.6.23} & Analyse détaillée du port FTP \\
+CVE-2020-14145 & 4.3 & Faille d'information divulguant les algorithmes de chiffrement supportés \\
 \hline
-\texttt{nmap -A -p21 10.6.6.23} & Analyse agressive du FTP \\
+CVE-2019-6110 & 4.0 & Manipulation de la sortie SSH permettant le masquage d'activités malveillantes \\
 \hline
-\texttt{nmap -A -p139,445 10.6.6.23} & Analyse des services SMB \\
-\hline
-\texttt{nmap --script smb-enum-users.nse -p139,445 10.6.6.23} & Énumération des utilisateurs SMB \\
-\hline
-\texttt{nmap --script smb-enum-shares.nse -p445 10.6.6.23} & Énumération des partages réseau \\
+CVE-2019-6109 & 4.0 & Vulnérabilité dans le traitement des noms de fichiers SCP \\
 \hline
 \end{tabular}
-\caption{Récapitulatif des commandes Nmap utilisées}
-\label{tab:commandes}
+\caption{CVE identifiées avec un score CVSS $\geq$ 4.0}
+\label{tab:cve_openssh}
 \end{table}
 
-\section{Vulnérabilités identifiées}
+\subsection{Consultation de la base de données NIST}
 
-\subsection{Risques de sécurité critiques}
+\begin{commandbox}
+\begin{lstlisting}
+# Consultation de la CVE principale sur le site NIST
+# URL: https://nvd.nist.gov/vuln/detail/CVE-2019-6111
+\end{lstlisting}
+\end{commandbox}
 
-Au cours de cette énumération, plusieurs vulnérabilités graves ont été découvertes sur la machine 10.6.6.23 :
+\begin{resultatbox}
+\textbf{CVE-2019-6111 - Analyse NIST :}
+\begin{itemize}
+    \item \textbf{Score CVSS v3.1 :} 5.9 (Gravité MOYENNE)
+    \item \textbf{Vecteur d'attaque :} Réseau (Network)
+    \item \textbf{Privilèges requis :} Aucun
+    \item \textbf{Impact :} Intégrité élevée, Confidentialité nulle
+    \item \textbf{Description :} Un attaquant peut exploiter une faille dans le client SCP pour écraser des fichiers arbitraires côté client lors du téléchargement de fichiers depuis un serveur malveillant
+\end{itemize}
+\end{resultatbox}
 
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.85\textwidth]{screenshot_nist_cve.png}}
+    \caption{Détails de la CVE-2019-6111 sur le site NIST NVD}
+    \label{fig:nist_cve}
+\end{figure}
+
+\section{Partie 2 : Analyse avec Greenbone Vulnerability Management (GVM)}
+
+\subsection{Introduction à GVM}
+
+\begin{definitionbox}{GVM (Greenbone Vulnerability Management)}
+GVM est une suite complète de gestion des vulnérabilités open source développée par Greenbone Networks. Contrairement à Nmap qui fonctionne en ligne de commande, GVM offre une interface graphique (Greenbone Security Assistant) pour orchestrer des analyses approfondies et générer des rapports détaillés.
+\end{definitionbox}
+
+\subsection{Vérification de l'installation}
+
+Avant de lancer toute analyse, il est crucial de vérifier que GVM est correctement installé et que ses bases de données sont à jour.
+
+\begin{commandbox}
+\begin{lstlisting}
+# Verification de la configuration GVM
+sudo gvm-check-setup
+\end{lstlisting}
+\end{commandbox}
+
+\begin{resultatbox}
+\textbf{État de l'installation :} La commande vérifie que tous les composants nécessaires sont installés et fonctionnels :
+\begin{itemize}
+    \item OpenVAS Scanner
+    \item GVM Daemon (gvmd)
+    \item Greenbone Security Assistant (gsad)
+    \item Bases de données CVE et SCAP
+\end{itemize}
+
+\textbf{Note :} Si des problèmes sont détectés, la commande fournit les instructions pour les résoudre.
+\end{resultatbox}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.85\textwidth]{screenshot_gvm_check.png}}
+    \caption{Vérification de la configuration GVM}
+    \label{fig:gvm_check}
+\end{figure}
+
+\subsection{Démarrage des services GVM}
+
+Pour cette activité, nous arrêtons d'abord GVM pour observer la sortie complète du démarrage.
+
+\begin{commandbox}
+\begin{lstlisting}
+# Arret des services GVM
+sudo gvm-stop
+
+# Demarrage des services GVM
+sudo gvm-start
+\end{lstlisting}
+\end{commandbox}
+
+\begin{resultatbox}
+\textbf{Services démarrés :}
 \begin{enumerate}
-    \item \textbf{Service FTP mal configuré}
-    \begin{itemize}
-        \item Accès anonyme autorisé sans authentification
-        \item Fichiers sensibles accessibles publiquement
-        \item Version vsftpd 3.0.3 (vérifier les CVE associées)
-    \end{itemize}
-    
-    \item \textbf{Partages SMB non sécurisés}
-    \begin{itemize}
-        \item Accès anonyme en LECTURE/ÉCRITURE sur tous les partages
-        \item Partage \texttt{workfiles} contenant des fichiers confidentiels
-        \item Signature de messages désactivée (exposition aux attaques man-in-the-middle)
-    \end{itemize}
-    
-    \item \textbf{Énumération facile des utilisateurs}
-    \begin{itemize}
-        \item Noms d'utilisateurs découverts sans authentification
-        \item Facilite les attaques par force brute
-    \end{itemize}
-    
-    \item \textbf{Services inutiles exposés}
-    \begin{itemize}
-        \item Plusieurs ports ouverts sans nécessité apparente
-        \item Surface d'attaque élargie
-    \end{itemize}
+    \item \textbf{ospd-openvas.service :} Wrapper OSPd pour le scanner OpenVAS
+    \item \textbf{gvmd.service :} Démon Greenbone Vulnerability Manager
+    \item \textbf{gsad.service :} Interface Web (Greenbone Security Assistant)
 \end{enumerate}
 
-\subsection{Recommandations de sécurité}
+\textbf{URL de l'interface :} https://127.0.0.1:9392
+\end{resultatbox}
 
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.90\textwidth]{screenshot_gvm_start.png}}
+    \caption{Démarrage des services GVM}
+    \label{fig:gvm_start}
+\end{figure}
+
+\subsection{Accès à l'interface graphique}
+
+\begin{commandbox}
+\begin{lstlisting}
+# Connexion a l'interface Web GVM
+# URL: https://127.0.0.1:9392
+# Username: admin
+# Password: kali
+\end{lstlisting}
+\end{commandbox}
+
+\begin{alertbox}
+\textbf{Avertissement de sécurité :}
+Le navigateur affiche un avertissement concernant le certificat SSL auto-signé de GVM. Cet avertissement peut être ignoré en environnement de laboratoire en cliquant sur « Avancé » puis « Accepter le risque et continuer ».
+\end{alertbox}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.80\textwidth]{screenshot_gvm_login.png}}
+    \caption{Écran de connexion Greenbone Security Assistant}
+    \label{fig:gvm_login}
+\end{figure}
+
+\subsection{Configuration de l'analyse}
+
+Une fois connecté, nous créons une nouvelle tâche d'analyse via l'assistant de tâche :
+
+\begin{enumerate}
+    \item Navigation : \textbf{Scans $\rightarrow$ Tasks}
+    \item Sélection de l'icône \textbf{Assistant de tâche} (icône baguette magique)
+    \item Choix : \textbf{Assistant de tâche}
+    \item Saisie de l'adresse IP cible : \textbf{10.6.6.23} ou \textbf{gravemind.vm}
+    \item Clic sur \textbf{Démarrer l'analyse}
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.85\textwidth]{screenshot_gvm_task_wizard.png}}
+    \caption{Configuration de l'assistant de tâche GVM}
+    \label{fig:gvm_wizard}
+\end{figure}
+
+\subsection{Arrêt des services GVM}
+
+Une fois l'analyse terminée, il est recommandé d'arrêter les services GVM pour libérer les ressources système.
+
+\begin{commandbox}
+\begin{lstlisting}
+# Arret des services GVM
+sudo gvm-stop
+\end{lstlisting}
+\end{commandbox}
+
+\section{Comparaison des résultats : Nmap vs GVM}
+
+\subsection{Analyse comparative}
+
+Le tableau suivant compare les deux outils d'analyse utilisés dans ce laboratoire :
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|p{3cm}|p{5.5cm}|p{5cm}|}
+\hline
+\textbf{Critère} & \textbf{Nmap + Vulners} & \textbf{GVM} \\
+\hline
+\textbf{Interface} & Ligne de commande & Interface graphique Web \\
+\hline
+\textbf{Facilité d'utilisation} & Nécessite connaissances CLI & Intuitive pour débutants \\
+\hline
+\textbf{Vitesse} & Rapide (quelques secondes) & Plus lent (5-10 minutes) \\
+\hline
+\textbf{Profondeur} & Scan ciblé des services & Analyse exhaustive \\
+\hline
+\textbf{CVE détectées} & Focus sur services réseau & Base de données plus large \\
+\hline
+\textbf{Rapports} & Sortie textuelle & Rapports PDF/HTML détaillés \\
+\hline
+\textbf{Mise à jour BD} & Base Vulners.com & Base SCAP/CVE locale \\
+\hline
+\textbf{Cas d'usage} & Reconnaissance initiale & Audit de sécurité complet \\
+\hline
+\end{tabular}
+\caption{Comparaison Nmap vs GVM}
+\label{tab:comparison}
+\end{table}
+
+\subsection{Divergences dans les CVE rapportées}
+
+\begin{alertbox}
+\textbf{Constat important :}
+\\
+Les CVE identifiées par Nmap et GVM ne sont pas identiques. Cette divergence s'explique par :
 \begin{itemize}
-    \item Désactiver l'accès FTP anonyme
-    \item Configurer l'authentification forte sur les partages SMB
-    \item Activer la signature des messages SMB
-    \item Fermer les ports non essentiels
-    \item Mettre à jour les services vers les dernières versions
-    \item Implémenter un système de détection d'intrusion (IDS)
-    \item Restreindre l'énumération des utilisateurs
+    \item Des bases de données de vulnérabilités différentes
+    \item Des fréquences de mise à jour variables
+    \item Des méthodologies de détection distinctes
+    \item Des scores de gravité calculés différemment
 \end{itemize}
+
+\textbf{Recommandation :} Utiliser les deux outils en complémentarité pour obtenir une vue exhaustive des vulnérabilités.
+\end{alertbox}
+
+\section{Conclusion}
+
+Ce laboratoire a permis d'explorer deux approches complémentaires de l'analyse des vulnérabilités réseau. \textbf{Nmap}, avec son script Vulners, offre une solution rapide et efficace pour identifier les CVE associées aux services exposés, particulièrement adaptée aux phases de reconnaissance initiale. \textbf{GVM (Greenbone Vulnerability Management)}, quant à lui, propose une solution d'audit de sécurité plus exhaustive avec une interface graphique facilitant la génération de rapports professionnels.
+
+
 
 \end{document}
