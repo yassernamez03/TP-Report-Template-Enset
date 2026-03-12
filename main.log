@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2026.2.23)  2 MAR 2026 22:13
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (MiKTeX 24.1) (preloaded format=pdflatex 2026.2.23)  12 MAR 2026 22:47
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -745,7 +745,26 @@ File: lstmisc.sty 2023/02/27 1.9 (Carsten Heinz)
 File: listings.cfg 2023/02/27 1.9 listings configuration
 ))
 Package: listings 2023/02/27 1.9 (Carsten Heinz)
- (C:\Users\Alienware\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstlang1.sty
+ (C:\Users\Alienware\AppData\Local\Programs\MiKTeX\tex/latex/booktabs\booktabs.sty
+Package: booktabs 2020/01/12 v1.61803398 Publication quality tables
+\heavyrulewidth=\dimen326
+\lightrulewidth=\dimen327
+\cmidrulewidth=\dimen328
+\belowrulesep=\dimen329
+\belowbottomsep=\dimen330
+\aboverulesep=\dimen331
+\abovetopsep=\dimen332
+\cmidrulesep=\dimen333
+\cmidrulekern=\dimen334
+\defaultaddspace=\dimen335
+\@cmidla=\count356
+\@cmidlb=\count357
+\@aboverulesep=\dimen336
+\@belowrulesep=\dimen337
+\@thisruleclass=\count358
+\@lastruleclass=\count359
+\@thisrulewidth=\dimen338
+) (C:\Users\Alienware\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstlang1.sty
 File: lstlang1.sty 2023/02/27 1.9 listings language file
 ) (C:\Users\Alienware\AppData\Local\Programs\MiKTeX\tex/latex/listings\lstlang1.sty
 File: lstlang1.sty 2023/02/27 1.9 listings language file
@@ -758,7 +777,7 @@ Package french3.ldf Info: Setting StandardEnumerateEnv=true for
 (french3.ldf)             reported on input line 81.
  (C:\Users\Alienware\AppData\Local\Programs\MiKTeX\tex/latex/l3backend\l3backend-pdftex.def
 File: l3backend-pdftex.def 2024-01-04 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count356
+\l__color_backend_stack_int=\count360
 \l__pdf_internal_box=\box93
 ) (main.aux)
 \openout1 = `main.aux'.
@@ -788,16 +807,16 @@ File: translations-basic-dictionary-french.trsl (french translation file `transl
 Package translations Info: loading dictionary `translations-basic-dictionary' for `french'. on input line 81.
  (C:\Users\Alienware\AppData\Local\Programs\MiKTeX\tex/context/base/mkii\supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count357
-\scratchdimen=\dimen326
+\scratchcounter=\count361
+\scratchdimen=\dimen339
 \scratchbox=\box94
-\nofMPsegments=\count358
-\nofMParguments=\count359
+\nofMPsegments=\count362
+\nofMParguments=\count363
 \everyMPshowfont=\toks49
-\MPscratchCnt=\count360
-\MPscratchDim=\dimen327
-\MPnumerator=\count361
-\makeMPintoPDFobject=\count362
+\MPscratchCnt=\count364
+\MPscratchDim=\dimen340
+\MPnumerator=\count365
+\makeMPintoPDFobject=\count366
 \everyMPtoPDFconversion=\toks50
 ) (C:\Users\Alienware\AppData\Local\Programs\MiKTeX\tex/latex/epstopdf-pkg\epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
@@ -849,12 +868,12 @@ Package hyperref Info: Link coloring OFF on input line 81.
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-\c@lstlisting=\count363
+\c@lstlisting=\count367
 \@nomenclaturefile=\write5
 \openout5 = `main.nlo'.
 
 Package nomencl Info: Writing nomenclature file main.nlo on input line 88.
-<logos/enset.png, id=94, 1003.75pt x 401.5pt>
+<logos/enset.png, id=82, 1003.75pt x 401.5pt>
 File: logos/enset.png Graphic file (type png)
 <use logos/enset.png>
 Package pdftex.def Info: logos/enset.png  used on input line 89.
@@ -867,7 +886,7 @@ LaTeX Font Info:    Trying to load font information for U+msb on input line 89.
  (C:\Users\Alienware\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-<logos/background.png, id=95, 597.60106pt x 845.26315pt>
+<logos/background.png, id=83, 597.60106pt x 845.26315pt>
 File: logos/background.png Graphic file (type png)
 <use logos/background.png>
 Package pdftex.def Info: logos/background.png  used on input line 89.
@@ -888,159 +907,143 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has b
                    \relax 
 l.90 \tabledematieres
                       [1]
-<topologie.png, id=140, 514.92375pt x 331.2375pt>
-File: topologie.png Graphic file (type png)
-<use topologie.png>
-Package pdftex.def Info: topologie.png  used on input line 119.
-(pdftex.def)             Requested size: 386.96027pt x 248.92787pt.
-LaTeX Font Info:    Trying to load font information for T1+cmtt on input line 131.
+File: logos/enset.png Graphic file (type png)
+<use logos/enset.png>
+Package pdftex.def Info: logos/enset.png  used on input line 121.
+(pdftex.def)             Requested size: 100.38087pt x 40.15234pt.
+ [2]
+<images/ec2_instance.png, id=129, 606.76688pt x 539.01375pt>
+File: images/ec2_instance.png Graphic file (type png)
+<use images/ec2_instance.png>
+Package pdftex.def Info: images/ec2_instance.png  used on input line 147.
+(pdftex.def)             Requested size: 386.96027pt x 343.75859pt.
+File: logos/enset.png Graphic file (type png)
+<use logos/enset.png>
+Package pdftex.def Info: logos/enset.png  used on input line 155.
+(pdftex.def)             Requested size: 100.38087pt x 40.15234pt.
+ [3 <./images/ec2_instance.png>]
+LaTeX Font Info:    Trying to load font information for T1+cmtt on input line 161.
  (C:\Users\Alienware\AppData\Local\Programs\MiKTeX\tex/latex/base\t1cmtt.fd
 File: t1cmtt.fd 2023/04/13 v2.5m Standard LaTeX font definitions
 )
+<images/rdp_connection.png, id=138, 1284.29813pt x 801.49437pt>
+File: images/rdp_connection.png Graphic file (type png)
+<use images/rdp_connection.png>
+Package pdftex.def Info: images/rdp_connection.png  used on input line 172.
+(pdftex.def)             Requested size: 364.19667pt x 227.27866pt.
+<images/network_config.png, id=139, 467.24562pt x 172.14313pt>
+File: images/network_config.png Graphic file (type png)
+<use images/network_config.png>
+Package pdftex.def Info: images/network_config.png  used on input line 189.
+(pdftex.def)             Requested size: 386.96027pt x 142.57141pt.
 File: logos/enset.png Graphic file (type png)
 <use logos/enset.png>
-Package pdftex.def Info: logos/enset.png  used on input line 135.
+Package pdftex.def Info: logos/enset.png  used on input line 193.
 (pdftex.def)             Requested size: 100.38087pt x 40.15234pt.
- [2 <./topologie.png>]
-<screenshot_ping.png, id=148, 638.385pt x 244.41313pt>
-File: screenshot_ping.png Graphic file (type png)
-<use screenshot_ping.png>
-Package pdftex.def Info: screenshot_ping.png  used on input line 143.
-(pdftex.def)             Requested size: 341.43307pt x 130.72057pt.
+ [4 <./images/rdp_connection.png>]
+<images/ie_security.png, id=157, 319.1925pt x 337.76187pt>
+File: images/ie_security.png Graphic file (type png)
+<use images/ie_security.png>
+Package pdftex.def Info: images/ie_security.png  used on input line 200.
+(pdftex.def)             Requested size: 364.19667pt x 385.38753pt.
 File: logos/enset.png Graphic file (type png)
 <use logos/enset.png>
-Package pdftex.def Info: logos/enset.png  used on input line 171.
+Package pdftex.def Info: logos/enset.png  used on input line 204.
 (pdftex.def)             Requested size: 100.38087pt x 40.15234pt.
- [3 <./screenshot_ping.png>]
-<screenshot_nmap_sv.png, id=163, 642.90187pt x 464.23438pt>
-File: screenshot_nmap_sv.png Graphic file (type png)
-<use screenshot_nmap_sv.png>
-Package pdftex.def Info: screenshot_nmap_sv.png  used on input line 174.
-(pdftex.def)             Requested size: 386.96027pt x 279.42822pt.
+ [5 <./images/network_config.png>]
+<images/server_rename.png, id=164, 248.93pt x 317.68687pt>
+File: images/server_rename.png Graphic file (type png)
+<use images/server_rename.png>
+Package pdftex.def Info: images/server_rename.png  used on input line 215.
+(pdftex.def)             Requested size: 364.19667pt x 464.83208pt.
 File: logos/enset.png Graphic file (type png)
 <use logos/enset.png>
-Package pdftex.def Info: logos/enset.png  used on input line 195.
+Package pdftex.def Info: logos/enset.png  used on input line 219.
 (pdftex.def)             Requested size: 100.38087pt x 40.15234pt.
- [4 <./screenshot_nmap_sv.png>]
-<screenshot_os_detection.png, id=173, 639.89063pt x 573.64313pt>
-File: screenshot_os_detection.png Graphic file (type png)
-<use screenshot_os_detection.png>
-Package pdftex.def Info: screenshot_os_detection.png  used on input line 198.
-(pdftex.def)             Requested size: 364.19667pt x 326.49855pt.
+ [6 <./images/ie_security.png>]
 File: logos/enset.png Graphic file (type png)
 <use logos/enset.png>
-Package pdftex.def Info: logos/enset.png  used on input line 221.
+Package pdftex.def Info: logos/enset.png  used on input line 220.
 (pdftex.def)             Requested size: 100.38087pt x 40.15234pt.
- [5 <./screenshot_os_detection.png>]
-<screenshot_vulners_scan.png, id=180, 641.89813pt x 566.115pt>
-File: screenshot_vulners_scan.png Graphic file (type png)
-<use screenshot_vulners_scan.png>
-Package pdftex.def Info: screenshot_vulners_scan.png  used on input line 230.
-(pdftex.def)             Requested size: 409.71692pt x 361.35352pt.
-
-Underfull \hbox (badness 3189) in paragraph at lines 250--251
-[]|\T1/cmr/m/n/10.95 Vulnérabilité de type me-mory sa-fety dans
+ [7 <./images/server_rename.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 237--238
+[]|\T1/cmr/m/n/12 Base dú-ti-li-sa-teurs lo-cale
  []
 
+<images/adds_installation.png, id=179, 596.2275pt x 420.57124pt>
+File: images/adds_installation.png Graphic file (type png)
+<use images/adds_installation.png>
+Package pdftex.def Info: images/adds_installation.png  used on input line 272.
+(pdftex.def)             Requested size: 386.96027pt x 272.95735pt.
 File: logos/enset.png Graphic file (type png)
 <use logos/enset.png>
-Package pdftex.def Info: logos/enset.png  used on input line 262.
+Package pdftex.def Info: logos/enset.png  used on input line 276.
 (pdftex.def)             Requested size: 100.38087pt x 40.15234pt.
-[6 <./screenshot_vulners_scan.png>]
-<screenshot_nist_cve.png, id=192, 627.84563pt x 655.44875pt>
-File: screenshot_nist_cve.png Graphic file (type png)
-<use screenshot_nist_cve.png>
-Package pdftex.def Info: screenshot_nist_cve.png  used on input line 285.
-(pdftex.def)             Requested size: 386.96027pt x 403.9637pt.
+[8]
+<images/dc_promotion.png, id=190, 569.12625pt x 422.07687pt>
+File: images/dc_promotion.png Graphic file (type png)
+<use images/dc_promotion.png>
+Package pdftex.def Info: images/dc_promotion.png  used on input line 299.
+(pdftex.def)             Requested size: 386.96027pt x 286.98915pt.
 File: logos/enset.png Graphic file (type png)
 <use logos/enset.png>
-Package pdftex.def Info: logos/enset.png  used on input line 289.
+Package pdftex.def Info: logos/enset.png  used on input line 303.
 (pdftex.def)             Requested size: 100.38087pt x 40.15234pt.
- [7]
+ [9 <./images/adds_installation.png>]
 File: logos/enset.png Graphic file (type png)
 <use logos/enset.png>
-Package pdftex.def Info: logos/enset.png  used on input line 307.
+Package pdftex.def Info: logos/enset.png  used on input line 308.
 (pdftex.def)             Requested size: 100.38087pt x 40.15234pt.
- [8 <./screenshot_nist_cve.png>]
-<screenshot_gvm_check.png, id=210, 635.87563pt x 691.58376pt>
-File: screenshot_gvm_check.png Graphic file (type png)
-<use screenshot_gvm_check.png>
-Package pdftex.def Info: screenshot_gvm_check.png  used on input line 323.
-(pdftex.def)             Requested size: 386.96027pt x 420.87352pt.
+ [10 <./images/dc_promotion.png>]
+<images/ou_structure.png, id=204, 569.62813pt x 399.4925pt>
+File: images/ou_structure.png Graphic file (type png)
+<use images/ou_structure.png>
+Package pdftex.def Info: images/ou_structure.png  used on input line 323.
+(pdftex.def)             Requested size: 364.19667pt x 255.4183pt.
+<images/users_created.png, id=205, 563.60562pt x 390.45876pt>
+File: images/users_created.png Graphic file (type png)
+<use images/users_created.png>
+Package pdftex.def Info: images/users_created.png  used on input line 349.
+(pdftex.def)             Requested size: 386.96027pt x 268.08224pt.
 File: logos/enset.png Graphic file (type png)
 <use logos/enset.png>
-Package pdftex.def Info: logos/enset.png  used on input line 327.
+Package pdftex.def Info: logos/enset.png  used on input line 353.
 (pdftex.def)             Requested size: 100.38087pt x 40.15234pt.
- [9]
+ [11 <./images/ou_structure.png>]
+<images/group_members.png, id=216, 563.60562pt x 394.97563pt>
+File: images/group_members.png Graphic file (type png)
+<use images/group_members.png>
+Package pdftex.def Info: images/group_members.png  used on input line 365.
+(pdftex.def)             Requested size: 364.19667pt x 255.23042pt.
 File: logos/enset.png Graphic file (type png)
 <use logos/enset.png>
-Package pdftex.def Info: logos/enset.png  used on input line 352.
+Package pdftex.def Info: logos/enset.png  used on input line 376.
 (pdftex.def)             Requested size: 100.38087pt x 40.15234pt.
- [10 <./screenshot_gvm_check.png>]
-<screenshot_gvm_start.png, id=230, 639.89063pt x 677.53125pt>
-File: screenshot_gvm_start.png Graphic file (type png)
-<use screenshot_gvm_start.png>
-Package pdftex.def Info: screenshot_gvm_start.png  used on input line 355.
-(pdftex.def)             Requested size: 409.71692pt x 433.82529pt.
-File: logos/enset.png Graphic file (type png)
-<use logos/enset.png>
-Package pdftex.def Info: logos/enset.png  used on input line 370.
-(pdftex.def)             Requested size: 100.38087pt x 40.15234pt.
- [11 <./screenshot_gvm_start.png>]
-<screenshot_gvm_login.png, id=240, 637.38126pt x 524.45938pt>
-File: screenshot_gvm_login.png Graphic file (type png)
-<use screenshot_gvm_login.png>
-Package pdftex.def Info: screenshot_gvm_login.png  used on input line 378.
-(pdftex.def)             Requested size: 364.19667pt x 299.67319pt.
+ [12 <./images/users_created.png> <./images/group_members.png>]
 File: logos/enset.png Graphic file (type png)
 <use logos/enset.png>
 Package pdftex.def Info: logos/enset.png  used on input line 393.
 (pdftex.def)             Requested size: 100.38087pt x 40.15234pt.
- [12 <./screenshot_gvm_login.png>]
-<screenshot_gvm_task_wizard.png, id=257, 638.88687pt x 545.53813pt>
-File: screenshot_gvm_task_wizard.png Graphic file (type png)
-<use screenshot_gvm_task_wizard.png>
-Package pdftex.def Info: screenshot_gvm_task_wizard.png  used on input line 397.
-(pdftex.def)             Requested size: 386.96027pt x 330.42201pt.
-
-Underfull \hbox (badness 1281) in paragraph at lines 428--428
-[]|\T1/cmr/bx/n/10.95 Facilité d'uti-li-
- []
-
-
-Underfull \hbox (badness 7576) in paragraph at lines 436--437
-[]|\T1/cmr/m/n/10.95 Rapports PDF/HTML dé-
- []
-
-File: logos/enset.png Graphic file (type png)
-<use logos/enset.png>
-Package pdftex.def Info: logos/enset.png  used on input line 446.
-(pdftex.def)             Requested size: 100.38087pt x 40.15234pt.
-[13 <./screenshot_gvm_task_wizard.png>]
-File: logos/enset.png Graphic file (type png)
-<use logos/enset.png>
-Package pdftex.def Info: logos/enset.png  used on input line 469.
-(pdftex.def)             Requested size: 100.38087pt x 40.15234pt.
- [14] (main.aux)
+ [13] (main.aux)
  ***********
 LaTeX2e <2023-11-01> patch level 1
 L3 programming layer <2024-01-04>
  ***********
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 483A5CAAF5198B5046561A134F734D53;5060.
+(rerunfilecheck)             Checksum: F6F9FC755BB2416061B8E82602D82919;4083.
  ) 
 Here is how much of TeX's memory you used:
- 36367 strings out of 474486
- 754245 string characters out of 5741867
- 1956542 words of memory out of 5000000
- 58012 multiletter control sequences out of 15000+600000
- 577395 words of font info for 80 fonts, out of 8000000 for 9000
+ 36407 strings out of 474486
+ 755041 string characters out of 5741867
+ 1971542 words of memory out of 5000000
+ 58074 multiletter control sequences out of 15000+600000
+ 575064 words of font info for 73 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 125i,17n,121p,613b,1408s stack positions out of 10000i,1000n,20000p,200000b,200000s
- <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1095.pk> <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1095.pk> <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt1200.pk> <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt1095.pk> <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\eccc1200.pk> <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1200.pk> <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1728.pk> <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1200.pk> <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\eccc1440.pk> <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbi1440.pk> <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx2488.pk> <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\eccc1728.pk> <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1440.pk> <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1440.pk> <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\eccc2074.pk><C:/Users/Alienware/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C:/Users/Alienware/AppData/Local/Programs/MiKTeX/fonts/type1/urw/zapfding/uzdr.pfb>
-Output written on main.pdf (15 pages, 7388862 bytes).
+ 125i,16n,121p,545b,1468s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt1200.pk> <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ectt1095.pk> <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\eccc1200.pk> <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1200.pk> <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1728.pk> <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1200.pk> <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\eccc1440.pk> <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbi1440.pk> <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx2488.pk> <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\eccc1728.pk> <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecbx1440.pk> <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\ecrm1440.pk> <C:\Users\Alienware\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\eccc2074.pk><C:/Users/Alienware/AppData/Local/Programs/MiKTeX/fonts/type1/urw/zapfding/uzdr.pfb>
+Output written on main.pdf (14 pages, 4161467 bytes).
 PDF statistics:
- 873 PDF objects out of 1000 (max. 8388607)
- 90 named destinations out of 1000 (max. 500000)
- 249 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 723 PDF objects out of 1000 (max. 8388607)
+ 65 named destinations out of 1000 (max. 500000)
+ 225 words of extra memory for PDF output out of 10000 (max. 10000000)
 

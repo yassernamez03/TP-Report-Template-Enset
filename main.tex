@@ -17,6 +17,7 @@
 \usepackage{caption}
 \usepackage{pifont}
 \usepackage{listings}
+\usepackage{booktabs}
 \lstset{
   language=bash,
   basicstyle=\small\ttfamily,
@@ -77,11 +78,10 @@
   title={\ding{43}} Attention
 }
 % -----------------------------------------------------------
-
 \begin{document}
 %----------- Informations du rapport ---------
-\titre{Compte rendu – Lab 3 - Vulnerability Scans with Kali Tools}
-\sujet{Module : Ethical Hacking}
+\titre{Travaux Pratiques : Installation et Configuration d'un Serveur Windows et Active Directory}
+\sujet{Module : Administration Système et Réseaux}
 \enseignant{Pr. Azeddine \textsc{KHIAT}}
 \eleves{Yasser \textsc{NAMEZ}}
 %----------- Initialisation -------------------
@@ -93,377 +93,301 @@
 
 \section{Introduction}
 
-Ce laboratoire pratique explore les outils d'analyse des vulnérabilités réseau disponibles dans Kali Linux, notamment \textbf{Nmap} avec ses scripts NSE et \textbf{Greenbone Vulnerability Management (GVM)}. Suite à la détection d'un trafic inhabituel provenant de la machine 10.6.6.23, une analyse approfondie des vulnérabilités a été commandée pour identifier les failles de sécurité potentielles.
+Ce rapport présente la réalisation de deux travaux pratiques portant sur l'installation et la configuration d'un serveur Windows Server 2025 avec Active Directory. Les manipulations ont été effectuées dans l'environnement cloud AWS Learner Lab.
 
 \begin{objectifbox}
 \begin{itemize}
-    \item Effectuer des analyses réseau avec Nmap et ses scripts NSE
-    \item Utiliser le script Vulners pour identifier les CVE
-    \item Déployer GVM pour une analyse complète des vulnérabilités
-    \item Comparer les résultats des deux outils d'analyse
-    \item Évaluer les vulnérabilités critiques et proposer des recommandations
+    \item Installer Windows Server 2025 dans une instance EC2
+    \item Configurer les paramètres réseau du serveur
+    \item Installer le rôle Active Directory Domain Services (AD DS)
+    \item Créer une forêt et un domaine Active Directory
+    \item Organiser l'annuaire avec des unités d'organisation
+    \item Créer des utilisateurs et des groupes
 \end{itemize}
 \end{objectifbox}
 
 \subsection{Environnement de laboratoire}
 
+\begin{definitionbox}{Technologies utilisées}
 \begin{itemize}
-    \item \textbf{Système d'analyse :} Kali Linux (réseau 10.6.6.0/24)
-    \item \textbf{Cible :} Machine suspecte (10.6.6.23 / gravemind.vm)
-    \item \textbf{Outils principaux :} Nmap 7.93 avec scripts NSE, GVM
-    \item \textbf{Base de données :} CVE et NVD (National Vulnerability Database)
+    \item \textbf{Plateforme cloud :} AWS Learner Lab
+    \item \textbf{Type d'instance :} EC2 t3.medium (4 GB RAM)
+    \item \textbf{Système d'exploitation :} Windows Server 2025 Standard Evaluation
+    \item \textbf{Stockage :} 50 GB gp3
+    \item \textbf{Protocole d'accès :} RDP (Remote Desktop Protocol)
 \end{itemize}
-
-\begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.85\textwidth]{topologie.png}}
-    \caption{Topologie du réseau de laboratoire}
-    \label{fig:topologie}
-\end{figure}
-
-\section{Partie 1 : Analyses Nmap avec scripts de vulnérabilités}
-
-\subsection{Vérification de la connectivité}
-
-Avant de commencer toute analyse, il est essentiel de vérifier que l'hôte cible est accessible sur le réseau.
-
-\begin{commandbox}
-\begin{lstlisting}
-# Test de connectivite avec la cible
-ping -c5 10.6.6.23
-\end{lstlisting}
-\end{commandbox}
-
-\begin{resultatbox}
-\textbf{État de la cible :} La machine 10.6.6.23 répond aux requêtes ICMP. L'hôte est actif et accessible sur le réseau.
-\end{resultatbox}
-
-\begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.75\textwidth]{screenshot_ping.png}}
-    \caption{Test de connectivité avec la cible}
-    \label{fig:ping}
-\end{figure}
-
-\subsection{Identification des ports et services ouverts}
-
-L'option \texttt{-sV} de Nmap effectue une détection de version des services pour identifier précisément les applications en écoute.
-
-\begin{commandbox}
-\begin{lstlisting}
-# Analyse des ports avec detection de version
-nmap -sV 10.6.6.23
-\end{lstlisting}
-\end{commandbox}
-
-\begin{resultatbox}
-\textbf{Ports ouverts détectés :}
-\begin{itemize}
-    \item \textbf{Port 21 :} FTP - vsftpd 3.0.3
-    \item \textbf{Port 22 :} SSH - OpenSSH 7.9p1 Debian 10+deb10u2
-    \item \textbf{Port 53 :} DNS - ISC BIND 9.11.5-P4-5.1+deb10u5
-    \item \textbf{Port 80 :} HTTP - nginx 1.14.2
-    \item \textbf{Port 139 :} NetBIOS-SSN - Samba smbd 3.X - 4.X
-    \item \textbf{Port 445 :} Microsoft-DS - Samba smbd 3.X - 4.X
-\end{itemize}
-\textbf{Total :} 6 ports TCP ouverts
-\end{resultatbox}
-
-\begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.85\textwidth]{screenshot_nmap_sv.png}}
-    \caption{Résultats de l'analyse Nmap avec détection de version}
-    \label{fig:nmap_sv}
-\end{figure}
-
-\subsection{Détection du système d'exploitation}
-
-L'option \texttt{-O} permet d'identifier le système d'exploitation de la cible en analysant les signatures TCP/IP.
-
-\begin{commandbox}
-\begin{lstlisting}
-# Detection du systeme d'exploitation (necessite root)
-sudo nmap -O 10.6.6.23
-\end{lstlisting}
-\end{commandbox}
-
-\begin{resultatbox}
-\textbf{Système d'exploitation identifié :} Linux 4.15 - 5.6
-\\
-\textbf{Type :} Système Unix/Linux (probablement Debian)
-\end{resultatbox}
-
-\begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.80\textwidth]{screenshot_os_detection.png}}
-    \caption{Identification du système d'exploitation}
-    \label{fig:os_detection}
-\end{figure}
-
-\section{Analyse des vulnérabilités avec le script Vulners}
-
-\subsection{Présentation du script Vulners}
-
-\begin{definitionbox}{Script Vulners}
-Le script Vulners est un script NSE (Nmap Scripting Engine) qui interroge la base de données Vulners.com pour identifier les vulnérabilités connues (CVE) associées aux services détectés. Il utilise les identifiants CPE (Common Platform Enumeration) pour rechercher des failles de sécurité documentées.
 \end{definitionbox}
 
-\subsection{Exécution du scan de vulnérabilités}
+\newpage
+\section{TP 1 : Installation et préparation de Windows Server 2025}
 
-Nous lançons maintenant une analyse complète avec le script Vulners en filtrant les CVE ayant un score CVSS d'au moins 4.0.
+\subsection{Création de l'instance EC2}
 
-\begin{commandbox}
-\begin{lstlisting}
-# Analyse avec le script Vulners (score CVSS >= 4.0)
-nmap -sV --script vulners --script-args mincvss=4 10.6.6.23
-\end{lstlisting}
-\end{commandbox}
-
-\begin{alertbox}
-\textbf{Service vulnérable identifié :} OpenSSH 7.9p1
-\\
-Le service SSH présente plusieurs vulnérabilités exploitables avec des scores CVSS variant de 4.0 à 5.8, incluant des exploits publiquement disponibles.
-\end{alertbox}
-
-\begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.90\textwidth]{screenshot_vulners_scan.png}}
-    \caption{Résultats du script Vulners sur l'hôte cible}
-    \label{fig:vulners}
-\end{figure}
-
-\subsection{Analyse détaillée des CVE découvertes}
-
-Le tableau ci-dessous présente les vulnérabilités critiques identifiées par le script Vulners :
+L'instance EC2 a été créée avec les paramètres suivants :
 
 \begin{table}[H]
 \centering
-\small
-\begin{tabular}{|p{3.5cm}|p{1.5cm}|p{8cm}|}
-\hline
-\textbf{CVE} & \textbf{Score} & \textbf{Description} \\
-\hline
-CVE-2019-6111 & 5.8 & Vulnérabilité dans le client SCP de OpenSSH permettant l'écrasement de fichiers arbitraires \\
-\hline
-CVE-2021-41617 & 4.4 & Faille dans la gestion des clés SSH permettant une escalade de privilèges locale \\
-\hline
-CVE-2019-16905 & 4.4 & Vulnérabilité de type memory safety dans OpenSSH \\
-\hline
-CVE-2020-14145 & 4.3 & Faille d'information divulguant les algorithmes de chiffrement supportés \\
-\hline
-CVE-2019-6110 & 4.0 & Manipulation de la sortie SSH permettant le masquage d'activités malveillantes \\
-\hline
-CVE-2019-6109 & 4.0 & Vulnérabilité dans le traitement des noms de fichiers SCP \\
-\hline
+\begin{tabular}{ll}
+\toprule
+\textbf{Paramètre} & \textbf{Valeur} \\
+\midrule
+Nom de l'instance & win2025 \\
+AMI & Windows Server 2025 Base \\
+Type d'instance & t3.medium \\
+Stockage & 50 GB gp3 \\
+Key pair & win2025-key.pem \\
+Security group & win2025-sg (RDP port 3389) \\
+\bottomrule
 \end{tabular}
-\caption{CVE identifiées avec un score CVSS $\geq$ 4.0}
-\label{tab:cve_openssh}
+\caption{Configuration de l'instance EC2}
 \end{table}
 
-\subsection{Consultation de la base de données NIST}
-
-\begin{commandbox}
-\begin{lstlisting}
-# Consultation de la CVE principale sur le site NIST
-# URL: https://nvd.nist.gov/vuln/detail/CVE-2019-6111
-\end{lstlisting}
-\end{commandbox}
-
-\begin{resultatbox}
-\textbf{CVE-2019-6111 - Analyse NIST :}
-\begin{itemize}
-    \item \textbf{Score CVSS v3.1 :} 5.9 (Gravité MOYENNE)
-    \item \textbf{Vecteur d'attaque :} Réseau (Network)
-    \item \textbf{Privilèges requis :} Aucun
-    \item \textbf{Impact :} Intégrité élevée, Confidentialité nulle
-    \item \textbf{Description :} Un attaquant peut exploiter une faille dans le client SCP pour écraser des fichiers arbitraires côté client lors du téléchargement de fichiers depuis un serveur malveillant
-\end{itemize}
-\end{resultatbox}
-
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.85\textwidth]{screenshot_nist_cve.png}}
-    \caption{Détails de la CVE-2019-6111 sur le site NIST NVD}
-    \label{fig:nist_cve}
+    \fbox{\includegraphics[width=0.85\textwidth]{images/ec2_instance.png}}
+    \caption{Instance EC2 en cours d'exécution}
+    \label{fig:ec2}
 \end{figure}
-
-\section{Partie 2 : Analyse avec Greenbone Vulnerability Management (GVM)}
-
-\subsection{Introduction à GVM}
-
-\begin{definitionbox}{GVM (Greenbone Vulnerability Management)}
-GVM est une suite complète de gestion des vulnérabilités open source développée par Greenbone Networks. Contrairement à Nmap qui fonctionne en ligne de commande, GVM offre une interface graphique (Greenbone Security Assistant) pour orchestrer des analyses approfondies et générer des rapports détaillés.
-\end{definitionbox}
-
-\subsection{Vérification de l'installation}
-
-Avant de lancer toute analyse, il est crucial de vérifier que GVM est correctement installé et que ses bases de données sont à jour.
-
-\begin{commandbox}
-\begin{lstlisting}
-# Verification de la configuration GVM
-sudo gvm-check-setup
-\end{lstlisting}
-\end{commandbox}
-
-\begin{resultatbox}
-\textbf{État de l'installation :} La commande vérifie que tous les composants nécessaires sont installés et fonctionnels :
-\begin{itemize}
-    \item OpenVAS Scanner
-    \item GVM Daemon (gvmd)
-    \item Greenbone Security Assistant (gsad)
-    \item Bases de données CVE et SCAP
-\end{itemize}
-
-\textbf{Note :} Si des problèmes sont détectés, la commande fournit les instructions pour les résoudre.
-\end{resultatbox}
-
-\begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.85\textwidth]{screenshot_gvm_check.png}}
-    \caption{Vérification de la configuration GVM}
-    \label{fig:gvm_check}
-\end{figure}
-
-\subsection{Démarrage des services GVM}
-
-Pour cette activité, nous arrêtons d'abord GVM pour observer la sortie complète du démarrage.
-
-\begin{commandbox}
-\begin{lstlisting}
-# Arret des services GVM
-sudo gvm-stop
-
-# Demarrage des services GVM
-sudo gvm-start
-\end{lstlisting}
-\end{commandbox}
-
-\begin{resultatbox}
-\textbf{Services démarrés :}
-\begin{enumerate}
-    \item \textbf{ospd-openvas.service :} Wrapper OSPd pour le scanner OpenVAS
-    \item \textbf{gvmd.service :} Démon Greenbone Vulnerability Manager
-    \item \textbf{gsad.service :} Interface Web (Greenbone Security Assistant)
-\end{enumerate}
-
-\textbf{URL de l'interface :} https://127.0.0.1:9392
-\end{resultatbox}
-
-\begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.90\textwidth]{screenshot_gvm_start.png}}
-    \caption{Démarrage des services GVM}
-    \label{fig:gvm_start}
-\end{figure}
-
-\subsection{Accès à l'interface graphique}
-
-\begin{commandbox}
-\begin{lstlisting}
-# Connexion a l'interface Web GVM
-# URL: https://127.0.0.1:9392
-# Username: admin
-# Password: kali
-\end{lstlisting}
-\end{commandbox}
 
 \begin{alertbox}
-\textbf{Avertissement de sécurité :}
-Le navigateur affiche un avertissement concernant le certificat SSL auto-signé de GVM. Cet avertissement peut être ignoré en environnement de laboratoire en cliquant sur « Avancé » puis « Accepter le risque et continuer ».
+L'adresse IP publique change à chaque redémarrage de l'instance. Il est nécessaire de récupérer la nouvelle adresse IP dans la console AWS avant chaque connexion RDP.
 \end{alertbox}
+
+\subsection{Connexion au serveur}
+
+La connexion au serveur s'effectue via le protocole RDP (Remote Desktop Protocol) :
+
+\begin{commandbox}
+\begin{lstlisting}
+1. Obtenir le mot de passe : AWS Console > EC2 > Connect > Get Password
+2. Connexion RDP avec :
+   - Adresse IP publique de l'instance
+   - Utilisateur : Administrator
+   - Mot de passe : (dechiffre avec la cle .pem)
+\end{lstlisting}
+\end{commandbox}
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.80\textwidth]{screenshot_gvm_login.png}}
-    \caption{Écran de connexion Greenbone Security Assistant}
-    \label{fig:gvm_login}
+    \fbox{\includegraphics[width=0.8\textwidth]{images/rdp_connection.png}}
+    \caption{Connexion RDP au serveur Windows}
+    \label{fig:rdp}
 \end{figure}
 
-\subsection{Configuration de l'analyse}
+\subsection{Configuration réseau}
 
-Une fois connecté, nous créons une nouvelle tâche d'analyse via l'assistant de tâche :
+La configuration réseau a été ajustée pour préparer l'installation d'Active Directory :
 
 \begin{enumerate}
-    \item Navigation : \textbf{Scans $\rightarrow$ Tasks}
-    \item Sélection de l'icône \textbf{Assistant de tâche} (icône baguette magique)
-    \item Choix : \textbf{Assistant de tâche}
-    \item Saisie de l'adresse IP cible : \textbf{10.6.6.23} ou \textbf{gravemind.vm}
-    \item Clic sur \textbf{Démarrer l'analyse}
+    \item \textbf{Adresse IP :} Configuration automatique (DHCP d'AWS)
+    \item \textbf{Serveur DNS préféré :} Adresse IP privée du serveur (préparation pour AD)
+    \item \textbf{Serveur DNS auxiliaire :} 1.1.1.1 (Cloudflare)
 \end{enumerate}
 
 \begin{figure}[H]
     \centering
-    \fbox{\includegraphics[width=0.85\textwidth]{screenshot_gvm_task_wizard.png}}
-    \caption{Configuration de l'assistant de tâche GVM}
-    \label{fig:gvm_wizard}
+    \fbox{\includegraphics[width=0.85\textwidth]{images/network_config.png}}
+    \caption{Configuration réseau du serveur}
+    \label{fig:network}
 \end{figure}
 
-\subsection{Arrêt des services GVM}
+\subsection{Désactivation de la configuration renforcée d'Internet Explorer}
 
-Une fois l'analyse terminée, il est recommandé d'arrêter les services GVM pour libérer les ressources système.
+Pour faciliter les téléchargements et la navigation, la configuration renforcée d'Internet Explorer a été désactivée pour les administrateurs et les utilisateurs.
 
-\begin{commandbox}
-\begin{lstlisting}
-# Arret des services GVM
-sudo gvm-stop
-\end{lstlisting}
-\end{commandbox}
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.8\textwidth]{images/ie_security.png}}
+    \caption{Désactivation de la configuration renforcée d'IE}
+    \label{fig:ie}
+\end{figure}
 
-\section{Comparaison des résultats : Nmap vs GVM}
+\subsection{Renommage du serveur}
 
-\subsection{Analyse comparative}
+Le serveur a été renommé de son nom par défaut vers \texttt{win2025} pour faciliter son identification dans le domaine.
 
-Le tableau suivant compare les deux outils d'analyse utilisés dans ce laboratoire :
+\begin{resultatbox}
+Le serveur a été renommé avec succès. Un redémarrage a été nécessaire pour appliquer les modifications.
+\end{resultatbox}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.8\textwidth]{images/server_rename.png}}
+    \caption{Renommage du serveur en win2025}
+    \label{fig:rename}
+\end{figure}
+
+\newpage
+\section{TP 2 : Installation et configuration du rôle Active Directory}
+
+\subsection{Concepts théoriques}
+
+\begin{definitionbox}{Active Directory}
+Active Directory est un annuaire LDAP pour les systèmes Windows qui centralise l'authentification et l'administration des ressources. Il permet de gérer les utilisateurs, les ordinateurs, les groupes et les politiques de sécurité de manière centralisée.
+\end{definitionbox}
+
+\subsubsection{Modèle Groupe de travail vs Domaine}
 
 \begin{table}[H]
 \centering
-\small
-\begin{tabular}{|p{3cm}|p{5.5cm}|p{5cm}|}
-\hline
-\textbf{Critère} & \textbf{Nmap + Vulners} & \textbf{GVM} \\
-\hline
-\textbf{Interface} & Ligne de commande & Interface graphique Web \\
-\hline
-\textbf{Facilité d'utilisation} & Nécessite connaissances CLI & Intuitive pour débutants \\
-\hline
-\textbf{Vitesse} & Rapide (quelques secondes) & Plus lent (5-10 minutes) \\
-\hline
-\textbf{Profondeur} & Scan ciblé des services & Analyse exhaustive \\
-\hline
-\textbf{CVE détectées} & Focus sur services réseau & Base de données plus large \\
-\hline
-\textbf{Rapports} & Sortie textuelle & Rapports PDF/HTML détaillés \\
-\hline
-\textbf{Mise à jour BD} & Base Vulners.com & Base SCAP/CVE locale \\
-\hline
-\textbf{Cas d'usage} & Reconnaissance initiale & Audit de sécurité complet \\
-\hline
+\begin{tabular}{p{5cm}p{5cm}}
+\toprule
+\textbf{Groupe de travail} & \textbf{Domaine} \\
+\midrule
+Base d\'utilisateurs locale (SAM) \& Base centralisée (Active Directory) \\
+Pas de gestion centralisée & Administration centralisée \\
+Un compte par machine & Un compte pour tout le domaine \\
+Adapté pour < 10 postes & Adapté pour les entreprises \\
+\bottomrule
 \end{tabular}
-\caption{Comparaison Nmap vs GVM}
-\label{tab:comparison}
+\caption{Comparaison Groupe de travail / Domaine}
 \end{table}
 
-\subsection{Divergences dans les CVE rapportées}
+\subsubsection{Structure de l'Active Directory}
 
-\begin{alertbox}
-\textbf{Constat important :}
-\\
-Les CVE identifiées par Nmap et GVM ne sont pas identiques. Cette divergence s'explique par :
+L'Active Directory est organisé de manière hiérarchique :
+
 \begin{itemize}
-    \item Des bases de données de vulnérabilités différentes
-    \item Des fréquences de mise à jour variables
-    \item Des méthodologies de détection distinctes
-    \item Des scores de gravité calculés différemment
+    \item \textbf{Forêt :} Plus haut niveau de l'organisation
+    \item \textbf{Domaine :} Limite de sécurité et d'administration
+    \item \textbf{Unités d'Organisation (OU) :} Conteneurs pour organiser les objets
+    \item \textbf{Objets :} Utilisateurs, ordinateurs, groupes, etc.
 \end{itemize}
 
-\textbf{Recommandation :} Utiliser les deux outils en complémentarité pour obtenir une vue exhaustive des vulnérabilités.
+\subsection{Installation du rôle AD DS}
+
+L'installation du rôle Active Directory Domain Services s'effectue via le Server Manager :
+
+\begin{commandbox}
+\begin{lstlisting}
+1. Server Manager > Manage > Add Roles and Features
+2. Selection du role : Active Directory Domain Services
+3. Ajout des fonctionnalites requises
+4. Lancement de l'installation
+\end{lstlisting}
+\end{commandbox}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.85\textwidth]{images/adds_installation.png}}
+    \caption{Installation du rôle AD DS}
+    \label{fig:adds}
+\end{figure}
+
+\subsection{Promotion en contrôleur de domaine}
+
+Après l'installation du rôle AD DS, le serveur a été promu en contrôleur de domaine avec la création d'une nouvelle forêt :
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{Paramètre} & \textbf{Valeur} \\
+\midrule
+Nom de domaine racine & laboprof.sio \\
+Nom NetBIOS & LABOPROF \\
+Niveau fonctionnel de la forêt & Windows Server 2025 \\
+Niveau fonctionnel du domaine & Windows Server 2025 \\
+Rôles installés & DNS, Catalogue global \\
+\bottomrule
+\end{tabular}
+\caption{Configuration du contrôleur de domaine}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.85\textwidth]{images/dc_promotion.png}}
+    \caption{Promotion du serveur en contrôleur de domaine}
+    \label{fig:dc}
+\end{figure}
+
+\begin{alertbox}
+Après la promotion en contrôleur de domaine, le serveur redémarre automatiquement. Le nom d'utilisateur pour la connexion devient \texttt{LABOPROF\textbackslash Administrator}.
 \end{alertbox}
+
+\newpage
+\subsection{Création de la structure organisationnelle}
+
+\subsubsection{Unités d'organisation}
+
+Trois unités d'organisation ont été créées pour organiser l'annuaire :
+
+\begin{enumerate}
+    \item \textbf{laboprof} : OU principale
+    \item \textbf{profs} : OU pour les enseignants (sous laboprof)
+    \item \textbf{élèves} : OU pour les étudiants (sous laboprof)
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.8\textwidth]{images/ou_structure.png}}
+    \caption{Structure des unités d'organisation}
+    \label{fig:ou}
+\end{figure}
+
+\subsubsection{Utilisateurs}
+
+Quatre comptes utilisateurs ont été créés et placés dans leurs unités d'organisation respectives :
+
+\begin{table}[H]
+\centering
+\begin{tabular}{llll}
+\toprule
+\textbf{Utilisateur} & \textbf{Nom de connexion} & \textbf{OU} & \textbf{Type} \\
+\midrule
+prof1 & prof1@laboprof.sio & profs & Enseignant \\
+prof2 & prof2@laboprof.sio & profs & Enseignant \\
+élève1 & eleve1@laboprof.sio & élèves & Étudiant \\
+élève2 & eleve2@laboprof.sio & élèves & Étudiant \\
+\bottomrule
+\end{tabular}
+\caption{Utilisateurs créés dans l'Active Directory}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.85\textwidth]{images/users_created.png}}
+    \caption{Utilisateurs dans l'Active Directory}
+    \label{fig:users}
+\end{figure}
+
+\subsubsection{Groupes de sécurité}
+
+Deux groupes de sécurité ont été créés pour faciliter la gestion des droits :
+
+\begin{itemize}
+    \item \textbf{GROUPE PROF} : Contient prof1 et prof2
+    \item \textbf{GROUPE ELEVE} : Contient eleve1 et eleve2
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \fbox{\includegraphics[width=0.8\textwidth]{images/group_members.png}}
+    \caption{Membres du groupe GROUPE PROF}
+    \label{fig:groups}
+\end{figure}
+
 
 \section{Conclusion}
 
-Ce laboratoire a permis d'explorer deux approches complémentaires de l'analyse des vulnérabilités réseau. \textbf{Nmap}, avec son script Vulners, offre une solution rapide et efficace pour identifier les CVE associées aux services exposés, particulièrement adaptée aux phases de reconnaissance initiale. \textbf{GVM (Greenbone Vulnerability Management)}, quant à lui, propose une solution d'audit de sécurité plus exhaustive avec une interface graphique facilitant la génération de rapports professionnels.
+Ces travaux pratiques ont permis de mettre en place un environnement Active Directory complet sur AWS Learner Lab. Les objectifs ont été atteints avec succès :
 
+\begin{itemize}
+    \item Installation de Windows Server 2025 dans le cloud AWS
+    \item Configuration réseau adaptée à l'environnement cloud
+    \item Déploiement d'un contrôleur de domaine avec création d'une forêt
+    \item Organisation de l'annuaire avec des unités d'organisation
+    \item Création d'utilisateurs et de groupes de sécurité
+\end{itemize}
 
+Cette infrastructure constitue la base pour des travaux pratiques futurs sur :
+\begin{itemize}
+    \item L'intégration de machines clientes au domaine
+    \item La mise en place de stratégies de groupe (GPO)
+    \item Le partage de ressources réseau
+    \item La gestion avancée des droits d'accès
+\end{itemize}
+
+L'utilisation d'AWS Learner Lab a permis de travailler dans un environnement cloud professionnel, offrant une expérience proche des infrastructures d'entreprise modernes.
 
 \end{document}
