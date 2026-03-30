@@ -1,9 +1,7 @@
 \documentclass{rapportENSET}
-% Encoding + language
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage[french]{babel}
-% Core packages
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{xcolor}
@@ -12,12 +10,13 @@
 \usepackage{enumitem}
 \usepackage{fancyhdr}
 \usepackage{tikz}
-\usetikzlibrary{shapes.geometric, arrows.meta, positioning, calc, decorations.pathreplacing, backgrounds}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, calc}
 \usepackage{tcolorbox}
 \usepackage{caption}
 \usepackage{pifont}
 \usepackage{listings}
 \usepackage{booktabs}
+
 \lstset{
   language=bash,
   basicstyle=\small\ttfamily,
@@ -27,367 +26,433 @@
   stringstyle=\color{red!60!black},
   breaklines=true,
   frame=none,
-  xleftmargin=4pt,
-  xrightmargin=4pt,
+  xleftmargin=4pt, xrightmargin=4pt,
   showstringspaces=false,
   columns=flexible
 }
-% -----------------------------------------------------------
-% Colors
-% -----------------------------------------------------------
+
 \definecolor{winblue}{RGB}{0,120,215}
 \definecolor{lightgray}{RGB}{245,245,245}
 \definecolor{darkgray}{RGB}{80,80,80}
 \definecolor{terminalgreen}{RGB}{0,150,0}
-% -----------------------------------------------------------
-% Custom item bullets
-% -----------------------------------------------------------
+
 \newcommand{\bulletpoint}{\textcolor{winblue}{\textbullet}}
 \renewcommand{\labelitemi}{\bulletpoint}
-% -----------------------------------------------------------
-% Custom boxes
-% -----------------------------------------------------------
-\newtcolorbox{definitionbox}[1]{
-  colback=lightgray,
-  colframe=winblue,
-  fonttitle=\bfseries,
-  title=#1
-}
-\newtcolorbox{objectifbox}{
-  colback=blue!5,
-  colframe=winblue,
-  fonttitle=\bfseries,
-  title=Objectifs
-}
-\newtcolorbox{commandbox}{
-  colback=lightgray,
-  colframe=darkgray,
-  fonttitle=\bfseries\ttfamily,
-  boxrule=0.5pt
-}
-\newtcolorbox{resultatbox}{
-  colback=green!5,
-  colframe=terminalgreen,
-  fonttitle=\bfseries,
-  title=Résultat
-}
-\newtcolorbox{alertbox}{
-  colback=red!5,
-  colframe=red!60!black,
-  fonttitle=\bfseries,
-  title={\ding{43}} Attention
-}
-% -----------------------------------------------------------
+
+\newtcolorbox{definitionbox}[1]{colback=lightgray,colframe=winblue,fonttitle=\bfseries,title=#1}
+\newtcolorbox{objectifbox}{colback=blue!5,colframe=winblue,fonttitle=\bfseries,title=Objectifs}
+\newtcolorbox{commandbox}{colback=lightgray,colframe=darkgray,fonttitle=\bfseries\ttfamily,boxrule=0.5pt}
+\newtcolorbox{resultatbox}{colback=green!5,colframe=terminalgreen,fonttitle=\bfseries,title=R\'esultat}
+\newtcolorbox{alertbox}{colback=red!5,colframe=red!60!black,fonttitle=\bfseries,title={\ding{43}} Attention}
+
+% ------------------------------------------------------------------
 \begin{document}
-%----------- Informations du rapport ---------
-\titre{Travaux Pratiques : Installation et Configuration d'un Serveur Windows et Active Directory}
-\sujet{Module : Administration Système et Réseaux}
+
+\titre{Travaux Pratiques : Installation et Configuration\\d'un Serveur Windows et Active Directory}
+\sujet{Module : Administration Syst\`eme et R\'eseaux}
 \enseignant{Pr. Azeddine \textsc{KHIAT}}
 \eleves{Yasser \textsc{NAMEZ}}
-%----------- Initialisation -------------------
+
 \fairemarges
 \fairepagedegarde
 \tabledematieres
 \newpage
-%------------ Corps du rapport ----------------
 
+% ================================================================
 \section{Introduction}
+% ================================================================
 
-Ce rapport présente la réalisation de deux travaux pratiques portant sur l'installation et la configuration d'un serveur Windows Server 2025 avec Active Directory. Les manipulations ont été effectuées dans l'environnement cloud AWS Learner Lab.
+Ces TP ont pour objectif de d\'eployer une infrastructure serveur bas\'ee sur
+\textbf{Windows Server 2025} et \textbf{Active Directory Domain Services (AD~DS)},
+dans un environnement virtualis\'e (VMware / AWS Learner Lab).
+
+\begin{table}[H]
+  \centering
+  \caption{Environnement du laboratoire}
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    \textbf{Composant} & \textbf{Valeur} & \textbf{R\^ole} \\
+    \midrule
+    Hyperviseur    & VMware / AWS Learner Lab & Virtualisation \\
+    OS invit\'e   & Windows Server 2025      & Serveur cible  \\
+    RAM / Disque   & 4 Go / 60 Go             & Ressources VM  \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\newpage
+
+% ================================================================
+\section{TP 1 --- Installation de Windows Server 2025}
+% ================================================================
 
 \begin{objectifbox}
-\begin{itemize}
-    \item Installer Windows Server 2025 dans une instance EC2
-    \item Configurer les paramètres réseau du serveur
-    \item Installer le rôle Active Directory Domain Services (AD DS)
-    \item Créer une forêt et un domaine Active Directory
-    \item Organiser l'annuaire avec des unités d'organisation
-    \item Créer des utilisateurs et des groupes
-\end{itemize}
+Installer WS2025, attribuer une IP statique, d\'esactiver le pare-feu, renommer le serveur.
 \end{objectifbox}
 
-\subsection{Environnement de laboratoire}
+% ----------------------------------------------------------------
+\subsection{Installation du syst\`eme d'exploitation}
+% ----------------------------------------------------------------
 
-\begin{definitionbox}{Technologies utilisées}
-\begin{itemize}
-    \item \textbf{Plateforme cloud :} AWS Learner Lab
-    \item \textbf{Type d'instance :} EC2 t3.medium (4 GB RAM)
-    \item \textbf{Système d'exploitation :} Windows Server 2025 Standard Evaluation
-    \item \textbf{Stockage :} 50 GB gp3
-    \item \textbf{Protocole d'accès :} RDP (Remote Desktop Protocol)
-\end{itemize}
-\end{definitionbox}
+Depuis l'ISO Windows Server 2025~: choisir l'\'edition \textbf{Desktop Experience},
+partitionner le disque, puis d\'efinir le mot de passe \texttt{Administrateur} local.
 
-\newpage
-\section{TP 1 : Installation et préparation de Windows Server 2025}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{captures/01_installation.png}
+  \caption{Assistant d'installation --- choix de l'\'edition Desktop Experience}
+  \label{fig:01_installation}
+\end{figure}
 
-\subsection{Création de l'instance EC2}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{captures/02_premier_demarrage.png}
+  \caption{Premier d\'emarrage --- \'ecran de connexion Windows Server 2025}
+  \label{fig:02_premier_demarrage}
+\end{figure}
 
-L'instance EC2 a été créée avec les paramètres suivants :
+% ----------------------------------------------------------------
+\subsection{Configuration de l'adresse IP statique}
+% ----------------------------------------------------------------
+
+\textit{Panneau de configuration $\rightarrow$ Centre R\'eseau $\rightarrow$
+Propri\'et\'es TCP/IPv4}
 
 \begin{table}[H]
-\centering
-\begin{tabular}{ll}
-\toprule
-\textbf{Paramètre} & \textbf{Valeur} \\
-\midrule
-Nom de l'instance & win2025 \\
-AMI & Windows Server 2025 Base \\
-Type d'instance & t3.medium \\
-Stockage & 50 GB gp3 \\
-Key pair & win2025-key.pem \\
-Security group & win2025-sg (RDP port 3389) \\
-\bottomrule
-\end{tabular}
-\caption{Configuration de l'instance EC2}
+  \centering
+  \caption{Param\`etres IP statiques du serveur}
+  \begin{tabular}{@{}ll@{}}
+    \toprule
+    \textbf{Param\`etre}     & \textbf{Valeur}        \\
+    \midrule
+    Adresse IP             & \texttt{192.168.1.10}  \\
+    Masque                 & \texttt{255.255.255.0} \\
+    Passerelle             & \texttt{192.168.1.1}   \\
+    DNS pr\'ef\'er\'e      & \texttt{127.0.0.1}     \\
+    DNS secondaire         & \texttt{8.8.8.8}       \\
+    \bottomrule
+  \end{tabular}
 \end{table}
 
 \begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.85\textwidth]{images/ec2_instance.png}}
-    \caption{Instance EC2 en cours d'exécution}
-    \label{fig:ec2}
+  \centering
+  \includegraphics[width=0.85\textwidth]{captures/03_ip_statique.png}
+  \caption{Propri\'et\'es TCP/IPv4 --- adresse IP statique configur\'ee}
+  \label{fig:03_ip_statique}
 \end{figure}
-
-\begin{alertbox}
-L'adresse IP publique change à chaque redémarrage de l'instance. Il est nécessaire de récupérer la nouvelle adresse IP dans la console AWS avant chaque connexion RDP.
-\end{alertbox}
-
-\subsection{Connexion au serveur}
-
-La connexion au serveur s'effectue via le protocole RDP (Remote Desktop Protocol) :
 
 \begin{commandbox}
 \begin{lstlisting}
-1. Obtenir le mot de passe : AWS Console > EC2 > Connect > Get Password
-2. Connexion RDP avec :
-   - Adresse IP publique de l'instance
-   - Utilisateur : Administrator
-   - Mot de passe : (dechiffre avec la cle .pem)
+ipconfig /all
 \end{lstlisting}
 \end{commandbox}
 
 \begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.8\textwidth]{images/rdp_connection.png}}
-    \caption{Connexion RDP au serveur Windows}
-    \label{fig:rdp}
-\end{figure}
+  \centering
+  \includegraphics[width=0.85\textwidth]{captures/04_ipconfig.png}
+  \caption{R\'esultat de \texttt{ipconfig /all}--- v\'erification de la configuration IP}
+  \label{fig:04_ipconfig}
+\end{figure} 
 
-\subsection{Configuration réseau}
+% ----------------------------------------------------------------
+\subsection{D\'esactivation du pare-feu}
+% ----------------------------------------------------------------
 
-La configuration réseau a été ajustée pour préparer l'installation d'Active Directory :
+\begin{alertbox}
+Op\'eration r\'eserv\'ee \`a un environnement de laboratoire isol\'e.
+\end{alertbox}
 
-\begin{enumerate}
-    \item \textbf{Adresse IP :} Configuration automatique (DHCP d'AWS)
-    \item \textbf{Serveur DNS préféré :} Adresse IP privée du serveur (préparation pour AD)
-    \item \textbf{Serveur DNS auxiliaire :} 1.1.1.1 (Cloudflare)
-\end{enumerate}
+\textit{Gestionnaire de serveur $\rightarrow$ Serveur local $\rightarrow$
+Pare-feu Windows Defender $\rightarrow$ D\'esactiver (Domaine / Priv\'e / Public)}
 
-\begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.85\textwidth]{images/network_config.png}}
-    \caption{Configuration réseau du serveur}
-    \label{fig:network}
-\end{figure}
-
-\subsection{Désactivation de la configuration renforcée d'Internet Explorer}
-
-Pour faciliter les téléchargements et la navigation, la configuration renforcée d'Internet Explorer a été désactivée pour les administrateurs et les utilisateurs.
+\begin{commandbox}
+\begin{lstlisting}
+Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
+\end{lstlisting}
+\end{commandbox}
 
 \begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.8\textwidth]{images/ie_security.png}}
-    \caption{Désactivation de la configuration renforcée d'IE}
-    \label{fig:ie}
+  \centering
+  \includegraphics[width=0.85\textwidth]{captures/05_firewall.png}
+  \caption{Pare-feu Windows Defender d\'esactiv\'e sur tous les profils}
+  \label{fig:05_firewall}
 \end{figure}
 
+% ----------------------------------------------------------------
 \subsection{Renommage du serveur}
+% ----------------------------------------------------------------
 
-Le serveur a été renommé de son nom par défaut vers \texttt{win2025} pour faciliter son identification dans le domaine.
+\textit{Gestionnaire de serveur $\rightarrow$ Serveur local $\rightarrow$
+Nom de l'ordinateur $\rightarrow$ Modifier $\rightarrow$ \texttt{SRV-AD01} $\rightarrow$ Red\'emarrer}
+
+\begin{commandbox}
+\begin{lstlisting}
+Rename-Computer -NewName "SRV-AD01" -Restart
+\end{lstlisting}
+\end{commandbox}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{captures/06_renommage.png}
+  \caption{Propri\'et\'es syst\`eme --- renommage du serveur en \texttt{SRV-AD01}}
+  \label{fig:06_renommage}
+\end{figure}
 
 \begin{resultatbox}
-Le serveur a été renommé avec succès. Un redémarrage a été nécessaire pour appliquer les modifications.
+Apr\`es red\'emarrage, le serveur est identifi\'e sous le nom \texttt{SRV-AD01}.
 \end{resultatbox}
 
+\newpage
+
+% ================================================================
+\section{TP 2 --- Active Directory Domain Services}
+% ================================================================
+
+\begin{objectifbox}
+Installer AD DS, promouvoir le serveur en contr\^oleur de domaine, cr\'eer des OU,
+des utilisateurs et des groupes.
+\end{objectifbox}
+
+% ----------------------------------------------------------------
+\subsection{Architecture d\'eploy\'ee}
+% ----------------------------------------------------------------
+
 \begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.8\textwidth]{images/server_rename.png}}
-    \caption{Renommage du serveur en win2025}
-    \label{fig:rename}
+\centering
+\begin{tikzpicture}[
+  font=\small,
+  server/.style={rectangle, rounded corners=4pt, draw=winblue, fill=blue!8,
+                 minimum width=3.2cm, minimum height=0.9cm, align=center},
+  ou/.style={rectangle, rounded corners=3pt, draw=winblue!70, fill=blue!4,
+             minimum width=2.6cm, minimum height=0.7cm, align=center},
+  user/.style={ellipse, draw=darkgray, fill=lightgray,
+               minimum width=1.7cm, minimum height=0.5cm, align=center, font=\tiny},
+  grp/.style={rectangle, draw=terminalgreen, fill=green!5, rounded corners=2pt,
+              minimum width=2cm, minimum height=0.45cm, align=center, font=\tiny},
+  arr/.style={-Stealth, winblue, thick},
+  darr/.style={-Stealth, darkgray, thin}
+]
+  \node[draw=winblue, fill=blue!3, rounded corners=8pt,
+        minimum width=11.5cm, minimum height=7.8cm,
+        label={[winblue,font=\bfseries\small]above:For\^et / Domaine : \texttt{lab.local}}]
+        (dom) at (0,0) {};
+
+  \node[server] (dc) at (0, 2.6) {\textbf{SRV-AD01}\\{\tiny Contr\^oleur de domaine}};
+
+  \node[ou] (ou1) at (-3.8, 0.9) {OU : Informatique};
+  \node[ou] (ou2) at (0,    0.9) {OU : RH};
+  \node[ou] (ou3) at (3.8,  0.9) {OU : Direction};
+
+  \foreach \x in {ou1,ou2,ou3} { \draw[arr] (dc) -- (\x); }
+
+  \node[user] (u1) at (-4.5,-0.4) {ali.benali};
+  \node[user] (u2) at (-3.1,-0.4) {yasser.namez};
+  \node[user] (u3) at (0,   -0.4) {fatima.zahra};
+  \node[user] (u4) at (3.8, -0.4) {admin.dir};
+
+  \draw[darr] (ou1)--(u1); \draw[darr] (ou1)--(u2);
+  \draw[darr] (ou2)--(u3);
+  \draw[darr] (ou3)--(u4);
+
+  \node[grp] (g1) at (-3.8,-1.5) {GRP\_Informatique};
+  \node[grp] (g2) at (0,   -1.5) {GRP\_RH};
+  \node[grp] (g3) at (3.8, -1.5) {GRP\_Direction};
+
+  \draw[darr] (ou1)--(g1); \draw[darr] (ou2)--(g2); \draw[darr] (ou3)--(g3);
+\end{tikzpicture}
+\caption{Architecture Active Directory --- domaine \texttt{lab.local}}
 \end{figure}
 
-\newpage
-\section{TP 2 : Installation et configuration du rôle Active Directory}
+% ----------------------------------------------------------------
+\subsection{Installation du r\^ole AD DS}
+% ----------------------------------------------------------------
 
-\subsection{Concepts théoriques}
-
-\begin{definitionbox}{Active Directory}
-Active Directory est un annuaire LDAP pour les systèmes Windows qui centralise l'authentification et l'administration des ressources. Il permet de gérer les utilisateurs, les ordinateurs, les groupes et les politiques de sécurité de manière centralisée.
-\end{definitionbox}
-
-\subsubsection{Modèle Groupe de travail vs Domaine}
-
-\begin{table}[H]
-\centering
-\begin{tabular}{p{5cm}p{5cm}}
-\toprule
-\textbf{Groupe de travail} & \textbf{Domaine} \\
-\midrule
-Base d\'utilisateurs locale (SAM) \& Base centralisée (Active Directory) \\
-Pas de gestion centralisée & Administration centralisée \\
-Un compte par machine & Un compte pour tout le domaine \\
-Adapté pour < 10 postes & Adapté pour les entreprises \\
-\bottomrule
-\end{tabular}
-\caption{Comparaison Groupe de travail / Domaine}
-\end{table}
-
-\subsubsection{Structure de l'Active Directory}
-
-L'Active Directory est organisé de manière hiérarchique :
-
-\begin{itemize}
-    \item \textbf{Forêt :} Plus haut niveau de l'organisation
-    \item \textbf{Domaine :} Limite de sécurité et d'administration
-    \item \textbf{Unités d'Organisation (OU) :} Conteneurs pour organiser les objets
-    \item \textbf{Objets :} Utilisateurs, ordinateurs, groupes, etc.
-\end{itemize}
-
-\subsection{Installation du rôle AD DS}
-
-L'installation du rôle Active Directory Domain Services s'effectue via le Server Manager :
+\textit{Gestionnaire de serveur $\rightarrow$ Ajouter des r\^oles $\rightarrow$
+Services de domaine Active Directory $\rightarrow$ Installer}
 
 \begin{commandbox}
 \begin{lstlisting}
-1. Server Manager > Manage > Add Roles and Features
-2. Selection du role : Active Directory Domain Services
-3. Ajout des fonctionnalites requises
-4. Lancement de l'installation
+Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
 \end{lstlisting}
 \end{commandbox}
 
 \begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.85\textwidth]{images/adds_installation.png}}
-    \caption{Installation du rôle AD DS}
-    \label{fig:adds}
+  \centering
+  \includegraphics[width=0.85\textwidth]{captures/07_adds_role.png}
+  \caption{S\'election du r\^ole AD DS dans l'assistant}
+  \label{fig:07_adds_role}
 \end{figure}
-
-\subsection{Promotion en contrôleur de domaine}
-
-Après l'installation du rôle AD DS, le serveur a été promu en contrôleur de domaine avec la création d'une nouvelle forêt :
-
-\begin{table}[H]
-\centering
-\begin{tabular}{ll}
-\toprule
-\textbf{Paramètre} & \textbf{Valeur} \\
-\midrule
-Nom de domaine racine & laboprof.sio \\
-Nom NetBIOS & LABOPROF \\
-Niveau fonctionnel de la forêt & Windows Server 2025 \\
-Niveau fonctionnel du domaine & Windows Server 2025 \\
-Rôles installés & DNS, Catalogue global \\
-\bottomrule
-\end{tabular}
-\caption{Configuration du contrôleur de domaine}
-\end{table}
 
 \begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.85\textwidth]{images/dc_promotion.png}}
-    \caption{Promotion du serveur en contrôleur de domaine}
-    \label{fig:dc}
+  \centering
+  \includegraphics[width=0.85\textwidth]{captures/08_adds_install.png}
+  \caption{Installation termin\'ee --- notification de configuration disponible}
+  \label{fig:08_adds_install}
 \end{figure}
+
+% ----------------------------------------------------------------
+\subsection{Promotion en contr\^oleur de domaine}
+% ----------------------------------------------------------------
+
+\textit{Notification $\rightarrow$ Promouvoir ce serveur $\rightarrow$ Nouvelle for\^et
+$\rightarrow$ \texttt{lab.local} $\rightarrow$ DNS + Catalogue global $\rightarrow$
+Mot de passe DSRM $\rightarrow$ Installer}
 
 \begin{alertbox}
-Après la promotion en contrôleur de domaine, le serveur redémarre automatiquement. Le nom d'utilisateur pour la connexion devient \texttt{LABOPROF\textbackslash Administrator}.
+Le mot de passe DSRM est indispensable pour la restauration de l'annuaire ---
+le conserver imp\'erativement.
 \end{alertbox}
 
-\newpage
-\subsection{Création de la structure organisationnelle}
-
-\subsubsection{Unités d'organisation}
-
-Trois unités d'organisation ont été créées pour organiser l'annuaire :
-
-\begin{enumerate}
-    \item \textbf{laboprof} : OU principale
-    \item \textbf{profs} : OU pour les enseignants (sous laboprof)
-    \item \textbf{élèves} : OU pour les étudiants (sous laboprof)
-\end{enumerate}
+\begin{commandbox}
+\begin{lstlisting}
+Install-ADDSForest `
+    -DomainName "lab.local" `
+    -DomainNetbiosName "LAB" `
+    -ForestMode "WinThreshold" `
+    -DomainMode "WinThreshold" `
+    -InstallDns -Force
+\end{lstlisting}
+\end{commandbox}
 
 \begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.8\textwidth]{images/ou_structure.png}}
-    \caption{Structure des unités d'organisation}
-    \label{fig:ou}
+  \centering
+  \includegraphics[width=0.85\textwidth]{captures/09_promotion.png}
+  \caption{Assistant AD DS --- cr\'eation de la for\^et \texttt{lab.local}}
+  \label{fig:09_promotion}
 \end{figure}
 
-\subsubsection{Utilisateurs}
 
-Quatre comptes utilisateurs ont été créés et placés dans leurs unités d'organisation respectives :
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\textwidth]{captures/11_login_domaine.png}
+  \caption{Connexion post-promotion --- contexte \texttt{LAB\textbackslash Administrateur}}
+  \label{fig:11_login_domaine}
+\end{figure}
+
+% ----------------------------------------------------------------
+\subsection{Cr\'eation des Unit\'es d'Organisation (OU)}
+% ----------------------------------------------------------------
+
+\textit{ADUC $\rightarrow$ clic droit sur \texttt{lab.local} $\rightarrow$
+Nouveau $\rightarrow$ Unit\'e d'organisation}
+
+\begin{commandbox}
+\begin{lstlisting}
+$base = "DC=lab,DC=local"
+foreach ($ou in @("Informatique","RH","Direction")) {
+    New-ADOrganizationalUnit -Name $ou -Path $base `
+        -ProtectedFromAccidentalDeletion $true
+}
+\end{lstlisting}
+\end{commandbox}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.85\textwidth]{captures/12_ou.png}
+  \caption{Console ADUC --- trois Unit\'es d'Organisation cr\'e\'ees}
+  \label{fig:12_ou}
+\end{figure}
+
+% ----------------------------------------------------------------
+\subsection{Cr\'eation des comptes utilisateurs}
+% ----------------------------------------------------------------
+
+\textit{ADUC $\rightarrow$ OU cible $\rightarrow$ Nouveau $\rightarrow$ Utilisateur}
 
 \begin{table}[H]
-\centering
-\begin{tabular}{llll}
-\toprule
-\textbf{Utilisateur} & \textbf{Nom de connexion} & \textbf{OU} & \textbf{Type} \\
-\midrule
-prof1 & prof1@laboprof.sio & profs & Enseignant \\
-prof2 & prof2@laboprof.sio & profs & Enseignant \\
-élève1 & eleve1@laboprof.sio & élèves & Étudiant \\
-élève2 & eleve2@laboprof.sio & élèves & Étudiant \\
-\bottomrule
-\end{tabular}
-\caption{Utilisateurs créés dans l'Active Directory}
+  \centering
+  \caption{Comptes utilisateurs cr\'e\'es}
+  \begin{tabular}{@{}lllll@{}}
+    \toprule
+    \textbf{Pr\'enom} & \textbf{Nom} & \textbf{Login} & \textbf{UPN} & \textbf{OU} \\
+    \midrule
+    Ali    & Benali  & ali.benali   & ali.benali@lab.local   & Informatique \\
+    Yasser & Namez   & yasser.namez & yasser.namez@lab.local & Informatique \\
+    Fatima & Zahra   & fatima.zahra & fatima.zahra@lab.local & RH           \\
+    Admin  & Dir     & admin.dir    & admin.dir@lab.local    & Direction    \\
+    \bottomrule
+  \end{tabular}
 \end{table}
 
+\begin{commandbox}
+\begin{lstlisting}
+New-ADUser -Name "Ali Benali" -SamAccountName "ali.benali" `
+    -UserPrincipalName "ali.benali@lab.local" `
+    -Path "OU=Informatique,DC=lab,DC=local" `
+    -AccountPassword (ConvertTo-SecureString "P@ssw0rd!" -AsPlainText -Force) `
+    -ChangePasswordAtLogon $true -Enabled $true
+\end{lstlisting}
+\end{commandbox}
+
+% ----------------------------------------------------------------
+\subsection{Cr\'eation des groupes de s\'ecurit\'e}
+% ----------------------------------------------------------------
+
+\textit{ADUC $\rightarrow$ OU cible $\rightarrow$ Nouveau $\rightarrow$ Groupe
+$\rightarrow$ \'Etendue : Globale / Type : S\'ecurit\'e $\rightarrow$ Ajouter membres}
+
+\begin{table}[H]
+  \centering
+  \caption{Groupes de s\'ecurit\'e et membres}
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    \textbf{Groupe}       & \textbf{OU}    & \textbf{Membres} \\
+    \midrule
+    GRP\_Informatique & Informatique & ali.benali, yasser.namez \\
+    GRP\_RH           & RH           & fatima.zahra             \\
+    GRP\_Direction    & Direction    & admin.dir                \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{commandbox}
+\begin{lstlisting}
+New-ADGroup -Name "GRP_Informatique" -GroupScope Global `
+    -GroupCategory Security -Path "OU=Informatique,DC=lab,DC=local"
+
+Add-ADGroupMember -Identity "GRP_Informatique" `
+    -Members ali.benali, yasser.namez
+\end{lstlisting}
+\end{commandbox}
+
+
 \begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.85\textwidth]{images/users_created.png}}
-    \caption{Utilisateurs dans l'Active Directory}
-    \label{fig:users}
+  \centering
+  \includegraphics[width=0.85\textwidth]{captures/16_group_members.png}
+  \caption{Membres ajout\'es au groupe --- onglet Membres}
+  \label{fig:16_group_members}
 \end{figure}
 
-\subsubsection{Groupes de sécurité}
+% ----------------------------------------------------------------
+\subsection{V\'erification finale}
+% ----------------------------------------------------------------
 
-Deux groupes de sécurité ont été créés pour faciliter la gestion des droits :
+\begin{commandbox}
+\begin{lstlisting}
+Get-ADDomain
+Get-ADOrganizationalUnit -Filter * | Select Name, DistinguishedName
+Get-ADUser -Filter * | Select Name, SamAccountName, Enabled
+Get-ADGroupMember -Identity "GRP_Informatique" | Select Name
+dcdiag /test:DNS
+\end{lstlisting}
+\end{commandbox}
 
-\begin{itemize}
-    \item \textbf{GROUPE PROF} : Contient prof1 et prof2
-    \item \textbf{GROUPE ELEVE} : Contient eleve1 et eleve2
-\end{itemize}
-
-\begin{figure}[H]
-    \centering
-    \fbox{\includegraphics[width=0.8\textwidth]{images/group_members.png}}
-    \caption{Membres du groupe GROUPE PROF}
-    \label{fig:groups}
-\end{figure}
-
-
+% ================================================================
 \section{Conclusion}
+% ================================================================
 
-Ces travaux pratiques ont permis de mettre en place un environnement Active Directory complet sur AWS Learner Lab. Les objectifs ont été atteints avec succès :
+Ces travaux pratiques ont permis de d\'eployer une infrastructure Active Directory
+fonctionnelle. Les comp\'etences acquises couvrent~:
 
 \begin{itemize}
-    \item Installation de Windows Server 2025 dans le cloud AWS
-    \item Configuration réseau adaptée à l'environnement cloud
-    \item Déploiement d'un contrôleur de domaine avec création d'une forêt
-    \item Organisation de l'annuaire avec des unités d'organisation
-    \item Création d'utilisateurs et de groupes de sécurité
+  \item L'installation et la configuration de base de \textbf{Windows Server 2025}.
+  \item Le d\'eploiement du r\^ole \textbf{AD DS} et la promotion en contr\^oleur de domaine.
+  \item La structuration de l'annuaire via des \textbf{OU}, des \textbf{utilisateurs}
+        et des \textbf{groupes de s\'ecurit\'e}.
+  \item L'utilisation de \textbf{PowerShell} pour l'automatisation des t\^aches d'administration.
 \end{itemize}
 
-Cette infrastructure constitue la base pour des travaux pratiques futurs sur :
-\begin{itemize}
-    \item L'intégration de machines clientes au domaine
-    \item La mise en place de stratégies de groupe (GPO)
-    \item Le partage de ressources réseau
-    \item La gestion avancée des droits d'accès
-\end{itemize}
-
-L'utilisation d'AWS Learner Lab a permis de travailler dans un environnement cloud professionnel, offrant une expérience proche des infrastructures d'entreprise modernes.
+Cet environnement servira de base pour les prochains TP (GPO, partage de ressources,
+int\'egration de machines clientes au domaine).
 
 \end{document}

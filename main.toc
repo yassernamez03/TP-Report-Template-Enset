@@ -1,20 +1,16 @@
 \babel@toc {french}{}\relax 
 \contentsline {section}{\numberline {1}Introduction}{2}{section.1}%
-\contentsline {subsection}{\numberline {1.1}Environnement de laboratoire}{2}{subsection.1.1}%
-\contentsline {section}{\numberline {2}TP 1 : Installation et préparation de Windows Server 2025}{3}{section.2}%
-\contentsline {subsection}{\numberline {2.1}Création de l'instance EC2}{3}{subsection.2.1}%
-\contentsline {subsection}{\numberline {2.2}Connexion au serveur}{4}{subsection.2.2}%
-\contentsline {subsection}{\numberline {2.3}Configuration réseau}{4}{subsection.2.3}%
-\contentsline {subsection}{\numberline {2.4}Désactivation de la configuration renforcée d'Internet Explorer}{5}{subsection.2.4}%
-\contentsline {subsection}{\numberline {2.5}Renommage du serveur}{6}{subsection.2.5}%
-\contentsline {section}{\numberline {3}TP 2 : Installation et configuration du rôle Active Directory}{8}{section.3}%
-\contentsline {subsection}{\numberline {3.1}Concepts théoriques}{8}{subsection.3.1}%
-\contentsline {subsubsection}{\numberline {3.1.1}Modèle Groupe de travail vs Domaine}{8}{subsubsection.3.1.1}%
-\contentsline {subsubsection}{\numberline {3.1.2}Structure de l'Active Directory}{8}{subsubsection.3.1.2}%
-\contentsline {subsection}{\numberline {3.2}Installation du rôle AD DS}{8}{subsection.3.2}%
-\contentsline {subsection}{\numberline {3.3}Promotion en contrôleur de domaine}{9}{subsection.3.3}%
-\contentsline {subsection}{\numberline {3.4}Création de la structure organisationnelle}{11}{subsection.3.4}%
-\contentsline {subsubsection}{\numberline {3.4.1}Unités d'organisation}{11}{subsubsection.3.4.1}%
-\contentsline {subsubsection}{\numberline {3.4.2}Utilisateurs}{11}{subsubsection.3.4.2}%
-\contentsline {subsubsection}{\numberline {3.4.3}Groupes de sécurité}{12}{subsubsection.3.4.3}%
-\contentsline {section}{\numberline {4}Conclusion}{13}{section.4}%
+\contentsline {section}{\numberline {2}TP 1 --- Installation de Windows Server 2025}{3}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Installation du syst\`eme d'exploitation}{3}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Configuration de l'adresse IP statique}{4}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}D\'esactivation du pare-feu}{5}{subsection.2.3}%
+\contentsline {subsection}{\numberline {2.4}Renommage du serveur}{6}{subsection.2.4}%
+\contentsline {section}{\numberline {3}TP 2 --- Active Directory Domain Services}{8}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Architecture d\'eploy\'ee}{8}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Installation du r\^ole AD DS}{8}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}Promotion en contr\^oleur de domaine}{9}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}Cr\'eation des Unit\'es d'Organisation (OU)}{11}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}Cr\'eation des comptes utilisateurs}{12}{subsection.3.5}%
+\contentsline {subsection}{\numberline {3.6}Cr\'eation des groupes de s\'ecurit\'e}{12}{subsection.3.6}%
+\contentsline {subsection}{\numberline {3.7}V\'erification finale}{13}{subsection.3.7}%
+\contentsline {section}{\numberline {4}Conclusion}{14}{section.4}%
