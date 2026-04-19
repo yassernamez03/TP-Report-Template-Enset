@@ -16,6 +16,7 @@
 \usepackage{pifont}
 \usepackage{listings}
 \usepackage{booktabs}
+\usepackage{hyperref}
 
 \lstset{
   language=bash,
@@ -48,8 +49,8 @@
 % ------------------------------------------------------------------
 \begin{document}
 
-\titre{Travaux Pratiques : Installation et Configuration\\d'un Serveur Windows et Active Directory}
-\sujet{Module : Administration Syst\`eme et R\'eseaux}
+\titre{TP : D\'eploiement et Administration\\d'un Serveur Linux sur AWS avec Webmin}
+\sujet{Module : Administration et S\'ecurit\'e des Syst\`emes et R\'eseaux}
 \enseignant{Pr. Azeddine \textsc{KHIAT}}
 \eleves{Yasser \textsc{NAMEZ}}
 
@@ -60,399 +61,418 @@
 
 % ================================================================
 \section{Introduction}
-% ================================================================
 
-Ces TP ont pour objectif de d\'eployer une infrastructure serveur bas\'ee sur
-\textbf{Windows Server 2025} et \textbf{Active Directory Domain Services (AD~DS)},
-dans un environnement virtualis\'e (VMware / AWS Learner Lab).
+Dans ce laboratoire, l'objectif est de cr\'eer et configurer un serveur Linux dans le cloud afin de comprendre les bases de l'administration syst\`eme \`a distance. Pour cela, nous avons utilis\'e la plateforme \textbf{Amazon Web Services (AWS)}, et plus pr\'ecis\'ement le service \textbf{Amazon EC2}, pour d\'eployer une instance Ubuntu 22.04 LTS.
 
-\begin{table}[H]
-  \centering
-  \caption{Environnement du laboratoire}
-  \begin{tabular}{@{}lll@{}}
-    \toprule
-    \textbf{Composant} & \textbf{Valeur} & \textbf{R\^ole} \\
-    \midrule
-    Hyperviseur    & VMware / AWS Learner Lab & Virtualisation \\
-    OS invit\'e   & Windows Server 2025      & Serveur cible  \\
-    RAM / Disque   & 4 Go / 60 Go             & Ressources VM  \\
-    \bottomrule
-  \end{tabular}
-\end{table}
+L'outil central de ce lab est \textbf{Webmin}, une interface web d'administration syst\`eme pour Linux. Gr\^ace \`a lui, il est possible de g\'erer un serveur complet — utilisateurs, services, firewall, configuration r\'eseau, SSH, Cron, etc. — depuis un simple navigateur, sans recourir syst\'ematiquement au terminal.
 
-\newpage
+Ce rapport pr\'esente les diff\'erentes \'etapes r\'ealis\'ees : la cr\'eation de l'instance EC2, la connexion SSH au serveur, l'installation et la configuration de Webmin, les tests fonctionnels effectu\'es sur les modules cl\'es, ainsi que la s\'ecurisation simple du serveur.
+
+\subsection*{Outils et technologies utilis\'es}
+
+\begin{itemize}
+  \item \textbf{Amazon EC2} : service AWS permettant de cr\'eer et g\'erer des serveurs virtuels dans le cloud.
+  \item \textbf{Ubuntu Server 22.04 LTS} : syst\`eme d'exploitation install\'e sur l'instance.
+  \item \textbf{Webmin} : interface web d'administration Linux (utilisateurs, services, firewall, SSH, Cron\ldots).
+  \item \textbf{Git Bash / Terminal SSH} : outil de connexion au serveur depuis Windows.
+  \item \textbf{Navigateur web} : acc\`es \`a l'interface Webmin via HTTPS sur le port 10000.
+\end{itemize}
 
 % ================================================================
-\section{TP 1 --- Installation de Windows Server 2025}
-% ================================================================
+\section{Objectifs du Laboratoire}
 
 \begin{objectifbox}
-Installer WS2025, attribuer une IP statique, d\'esactiver le pare-feu, renommer le serveur.
+\begin{itemize}
+  \item Comprendre le r\^ole de Webmin dans l'administration Linux.
+  \item D\'eployer un serveur Linux (Ubuntu) sur AWS via EC2.
+  \item Installer et configurer Webmin correctement sur Ubuntu/Debian.
+  \item Acc\'eder \`a Webmin en HTTPS sur le port 10000.
+  \item Administrer un serveur via Webmin : utilisateurs, services, firewall, SSH, Cron, monitoring.
+  \item S\'ecuriser l'acc\`es au serveur avec UFW et HTTPS.
+\end{itemize}
 \end{objectifbox}
 
-% ----------------------------------------------------------------
-\subsection{Installation du syst\`eme d'exploitation}
-% ----------------------------------------------------------------
+% ================================================================
+\section{Description des Manipulations}
 
-Depuis l'ISO Windows Server 2025~: choisir l'\'edition \textbf{Desktop Experience},
-partitionner le disque, puis d\'efinir le mot de passe \texttt{Administrateur} local.
+% ----------------------------------------------------------------
+\subsection{\'Etape 1 — Cr\'eation d'une instance EC2 AWS}
+
+La premi\`ere \'etape consiste \`a cr\'eer une machine virtuelle (instance) sur le cloud AWS.
+
+\begin{enumerate}
+  \item Se connecter \`a la console AWS et naviguer vers \textbf{EC2 $\rightarrow$ Launch Instance}.
+  \item Choisir les param\`etres suivants :
+  \begin{itemize}
+    \item \textbf{AMI} : Ubuntu Server 22.04 LTS (HVM), SSD Volume Type
+    \item \textbf{Type d'instance} : \texttt{t2.micro} (\'eligible \`a l'offre gratuite)
+    \item \textbf{Paire de cl\'es} : cr\'eation d'une nouvelle cl\'e SSH (\texttt{Webmin.pem})
+    \item \textbf{Groupe de s\'ecurit\'e} : ouverture des ports suivants :
+  \end{itemize}
+\end{enumerate}
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Port} & \textbf{Service} & \textbf{Description} \\
+\midrule
+22    & SSH   & Acc\`es serveur via terminal \\
+10000 & Webmin & Interface d'administration web \\
+443   & HTTPS  & Panneaux Webmin / SSL \\
+80    & HTTP   & Si modules web actifs \\
+\bottomrule
+\end{tabular}
+\captionof{table}{Ports ouverts dans le groupe de s\'ecurit\'e EC2}
+\end{center}
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.85\textwidth]{captures/01_installation.png}
-  \caption{Assistant d'installation --- choix de l'\'edition Desktop Experience}
-  \label{fig:01_installation}
+  \includegraphics[width=0.9\textwidth]{figures/ec2_creation.png}
+  \caption{Figure 1 — Console AWS EC2 : cr\'eation de l'instance Ubuntu}
 \end{figure}
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.85\textwidth]{captures/02_premier_demarrage.png}
-  \caption{Premier d\'emarrage --- \'ecran de connexion Windows Server 2025}
-  \label{fig:02_premier_demarrage}
+  \includegraphics[width=0.9\textwidth]{figures/ec2_security_group.png}
+  \caption{Figure 2 — Configuration du groupe de s\'ecurit\'e avec les ports requis}
 \end{figure}
 
-% ----------------------------------------------------------------
-\subsection{Configuration de l'adresse IP statique}
-% ----------------------------------------------------------------
-
-\textit{Panneau de configuration $\rightarrow$ Centre R\'eseau $\rightarrow$
-Propri\'et\'es TCP/IPv4}
-
-\begin{table}[H]
-  \centering
-  \caption{Param\`etres IP statiques du serveur}
-  \begin{tabular}{@{}ll@{}}
-    \toprule
-    \textbf{Param\`etre}     & \textbf{Valeur}        \\
-    \midrule
-    Adresse IP             & \texttt{192.168.1.10}  \\
-    Masque                 & \texttt{255.255.255.0} \\
-    Passerelle             & \texttt{192.168.1.1}   \\
-    DNS pr\'ef\'er\'e      & \texttt{127.0.0.1}     \\
-    DNS secondaire         & \texttt{8.8.8.8}       \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.85\textwidth]{captures/03_ip_statique.png}
-  \caption{Propri\'et\'es TCP/IPv4 --- adresse IP statique configur\'ee}
-  \label{fig:03_ip_statique}
-\end{figure}
-
-\begin{commandbox}
-\begin{lstlisting}
-ipconfig /all
-\end{lstlisting}
-\end{commandbox}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.85\textwidth]{captures/04_ipconfig.png}
-  \caption{R\'esultat de \texttt{ipconfig /all}--- v\'erification de la configuration IP}
-  \label{fig:04_ipconfig}
-\end{figure} 
-
-% ----------------------------------------------------------------
-\subsection{D\'esactivation du pare-feu}
-% ----------------------------------------------------------------
-
-\begin{alertbox}
-Op\'eration r\'eserv\'ee \`a un environnement de laboratoire isol\'e.
-\end{alertbox}
-
-\textit{Gestionnaire de serveur $\rightarrow$ Serveur local $\rightarrow$
-Pare-feu Windows Defender $\rightarrow$ D\'esactiver (Domaine / Priv\'e / Public)}
-
-\begin{commandbox}
-\begin{lstlisting}
-Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
-\end{lstlisting}
-\end{commandbox}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.85\textwidth]{captures/05_firewall.png}
-  \caption{Pare-feu Windows Defender d\'esactiv\'e sur tous les profils}
-  \label{fig:05_firewall}
-\end{figure}
-
-% ----------------------------------------------------------------
-\subsection{Renommage du serveur}
-% ----------------------------------------------------------------
-
-\textit{Gestionnaire de serveur $\rightarrow$ Serveur local $\rightarrow$
-Nom de l'ordinateur $\rightarrow$ Modifier $\rightarrow$ \texttt{SRV-AD01} $\rightarrow$ Red\'emarrer}
-
-\begin{commandbox}
-\begin{lstlisting}
-Rename-Computer -NewName "SRV-AD01" -Restart
-\end{lstlisting}
-\end{commandbox}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.85\textwidth]{captures/06_renommage.png}
-  \caption{Propri\'et\'es syst\`eme --- renommage du serveur en \texttt{SRV-AD01}}
-  \label{fig:06_renommage}
+  \includegraphics[width=0.9\textwidth]{figures/ec2_launch_success.png}
+  \caption{Figure 3 — Lancement de l'instance avec succ\`es}
 \end{figure}
 
 \begin{resultatbox}
-Apr\`es red\'emarrage, le serveur est identifi\'e sous le nom \texttt{SRV-AD01}.
+L'instance EC2 Ubuntu 22.04 a \'et\'e cr\'e\'ee et lanc\'ee avec succ\`es. L'adresse IP publique a \'et\'e r\'ecup\'er\'ee pour les connexions SSH et Webmin.
 \end{resultatbox}
 
-\newpage
-
-% ================================================================
-\section{TP 2 --- Active Directory Domain Services}
-% ================================================================
-
-\begin{objectifbox}
-Installer AD DS, promouvoir le serveur en contr\^oleur de domaine, cr\'eer des OU,
-des utilisateurs et des groupes.
-\end{objectifbox}
-
 % ----------------------------------------------------------------
-\subsection{Architecture d\'eploy\'ee}
-% ----------------------------------------------------------------
+\subsection{\'Etape 2 — Connexion au serveur via SSH}
 
-\begin{figure}[H]
-\centering
-\begin{tikzpicture}[
-  font=\small,
-  server/.style={rectangle, rounded corners=4pt, draw=winblue, fill=blue!8,
-                 minimum width=3.2cm, minimum height=0.9cm, align=center},
-  ou/.style={rectangle, rounded corners=3pt, draw=winblue!70, fill=blue!4,
-             minimum width=2.6cm, minimum height=0.7cm, align=center},
-  user/.style={ellipse, draw=darkgray, fill=lightgray,
-               minimum width=1.7cm, minimum height=0.5cm, align=center, font=\tiny},
-  grp/.style={rectangle, draw=terminalgreen, fill=green!5, rounded corners=2pt,
-              minimum width=2cm, minimum height=0.45cm, align=center, font=\tiny},
-  arr/.style={-Stealth, winblue, thick},
-  darr/.style={-Stealth, darkgray, thin}
-]
-  \node[draw=winblue, fill=blue!3, rounded corners=8pt,
-        minimum width=11.5cm, minimum height=7.8cm,
-        label={[winblue,font=\bfseries\small]above:For\^et / Domaine : \texttt{lab.local}}]
-        (dom) at (0,0) {};
-
-  \node[server] (dc) at (0, 2.6) {\textbf{SRV-AD01}\\{\tiny Contr\^oleur de domaine}};
-
-  \node[ou] (ou1) at (-3.8, 0.9) {OU : Informatique};
-  \node[ou] (ou2) at (0,    0.9) {OU : RH};
-  \node[ou] (ou3) at (3.8,  0.9) {OU : Direction};
-
-  \foreach \x in {ou1,ou2,ou3} { \draw[arr] (dc) -- (\x); }
-
-  \node[user] (u1) at (-4.5,-0.4) {ali.benali};
-  \node[user] (u2) at (-3.1,-0.4) {yasser.namez};
-  \node[user] (u3) at (0,   -0.4) {fatima.zahra};
-  \node[user] (u4) at (3.8, -0.4) {admin.dir};
-
-  \draw[darr] (ou1)--(u1); \draw[darr] (ou1)--(u2);
-  \draw[darr] (ou2)--(u3);
-  \draw[darr] (ou3)--(u4);
-
-  \node[grp] (g1) at (-3.8,-1.5) {GRP\_Informatique};
-  \node[grp] (g2) at (0,   -1.5) {GRP\_RH};
-  \node[grp] (g3) at (3.8, -1.5) {GRP\_Direction};
-
-  \draw[darr] (ou1)--(g1); \draw[darr] (ou2)--(g2); \draw[darr] (ou3)--(g3);
-\end{tikzpicture}
-\caption{Architecture Active Directory --- domaine \texttt{lab.local}}
-\end{figure}
-
-% ----------------------------------------------------------------
-\subsection{Installation du r\^ole AD DS}
-% ----------------------------------------------------------------
-
-\textit{Gestionnaire de serveur $\rightarrow$ Ajouter des r\^oles $\rightarrow$
-Services de domaine Active Directory $\rightarrow$ Installer}
+Apr\`es le lancement de l'instance, la connexion au serveur se fait via SSH en utilisant la cl\'e priv\'ee g\'en\'er\'ee.
 
 \begin{commandbox}
 \begin{lstlisting}
-Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
+# Restriction des permissions de la cle privee (obligatoire sous Linux/macOS)
+chmod 400 Webmin.pem
+
+# Connexion SSH a l'instance EC2
+ssh -i "Webmin.pem" ubuntu@<IP-PUBLIQUE>
 \end{lstlisting}
 \end{commandbox}
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.85\textwidth]{captures/07_adds_role.png}
-  \caption{S\'election du r\^ole AD DS dans l'assistant}
-  \label{fig:07_adds_role}
+  \includegraphics[width=0.9\textwidth]{figures/ssh_connexion.png}
+  \caption{Figure 4 — Terminal affichant la commande SSH et la connexion r\'eussie}
 \end{figure}
 
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.85\textwidth]{captures/08_adds_install.png}
-  \caption{Installation termin\'ee --- notification de configuration disponible}
-  \label{fig:08_adds_install}
-\end{figure}
+\begin{resultatbox}
+Connexion \'etablie avec succ\`es \`a l'instance EC2 via Git Bash sur Windows, gr\^ace \`a la cl\'e priv\'ee \texttt{Webmin.pem}, apr\`es configuration des permissions et validation de l'empreinte du serveur.
+\end{resultatbox}
 
 % ----------------------------------------------------------------
-\subsection{Promotion en contr\^oleur de domaine}
-% ----------------------------------------------------------------
+\subsection{\'Etape 3 — Installation de Webmin}
 
-\textit{Notification $\rightarrow$ Promouvoir ce serveur $\rightarrow$ Nouvelle for\^et
-$\rightarrow$ \texttt{lab.local} $\rightarrow$ DNS + Catalogue global $\rightarrow$
-Mot de passe DSRM $\rightarrow$ Installer}
+L'installation de Webmin se d\'eroule en plusieurs sous-\'etapes.
 
-\begin{alertbox}
-Le mot de passe DSRM est indispensable pour la restauration de l'annuaire ---
-le conserver imp\'erativement.
-\end{alertbox}
+\subsubsection*{1. Mise \`a jour du syst\`eme}
 
 \begin{commandbox}
 \begin{lstlisting}
-Install-ADDSForest `
-    -DomainName "lab.local" `
-    -DomainNetbiosName "LAB" `
-    -ForestMode "WinThreshold" `
-    -DomainMode "WinThreshold" `
-    -InstallDns -Force
+sudo apt update && sudo apt upgrade -y
 \end{lstlisting}
 \end{commandbox}
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.85\textwidth]{captures/09_promotion.png}
-  \caption{Assistant AD DS --- cr\'eation de la for\^et \texttt{lab.local}}
-  \label{fig:09_promotion}
+  \includegraphics[width=0.9\textwidth]{figures/apt_update.png}
+  \caption{Figure 5 — R\'esultat de la mise \`a jour des paquets}
 \end{figure}
 
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.8\textwidth]{captures/11_login_domaine.png}
-  \caption{Connexion post-promotion --- contexte \texttt{LAB\textbackslash Administrateur}}
-  \label{fig:11_login_domaine}
-\end{figure}
-
-% ----------------------------------------------------------------
-\subsection{Cr\'eation des Unit\'es d'Organisation (OU)}
-% ----------------------------------------------------------------
-
-\textit{ADUC $\rightarrow$ clic droit sur \texttt{lab.local} $\rightarrow$
-Nouveau $\rightarrow$ Unit\'e d'organisation}
+\subsubsection*{2. Installation des d\'ependances}
 
 \begin{commandbox}
 \begin{lstlisting}
-$base = "DC=lab,DC=local"
-foreach ($ou in @("Informatique","RH","Direction")) {
-    New-ADOrganizationalUnit -Name $ou -Path $base `
-        -ProtectedFromAccidentalDeletion $true
-}
+sudo apt install -y wget curl apt-transport-https gnupg
 \end{lstlisting}
 \end{commandbox}
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.85\textwidth]{captures/12_ou.png}
-  \caption{Console ADUC --- trois Unit\'es d'Organisation cr\'e\'ees}
-  \label{fig:12_ou}
+  \includegraphics[width=0.9\textwidth]{figures/apt_dependencies.png}
+  \caption{Figure 6 — Installation des d\'ependances n\'ecessaires}
 \end{figure}
 
-% ----------------------------------------------------------------
-\subsection{Cr\'eation des comptes utilisateurs}
-% ----------------------------------------------------------------
+\subsubsection*{3. Ajout du d\'ep\^ot Webmin}
 
-\textit{ADUC $\rightarrow$ OU cible $\rightarrow$ Nouveau $\rightarrow$ Utilisateur}
-
-\begin{table}[H]
-  \centering
-  \caption{Comptes utilisateurs cr\'e\'es}
-  \begin{tabular}{@{}lllll@{}}
-    \toprule
-    \textbf{Pr\'enom} & \textbf{Nom} & \textbf{Login} & \textbf{UPN} & \textbf{OU} \\
-    \midrule
-    Ali    & Benali  & ali.benali   & ali.benali@lab.local   & Informatique \\
-    Yasser & Namez   & yasser.namez & yasser.namez@lab.local & Informatique \\
-    Fatima & Zahra   & fatima.zahra & fatima.zahra@lab.local & RH           \\
-    Admin  & Dir     & admin.dir    & admin.dir@lab.local    & Direction    \\
-    \bottomrule
-  \end{tabular}
-\end{table}
+Le d\'ep\^ot officiel Webmin utilise une signature DSA non support\'ee par les versions r\'ecentes d'APT ; on utilise donc l'option \texttt{trusted=yes}.
 
 \begin{commandbox}
 \begin{lstlisting}
-New-ADUser -Name "Ali Benali" -SamAccountName "ali.benali" `
-    -UserPrincipalName "ali.benali@lab.local" `
-    -Path "OU=Informatique,DC=lab,DC=local" `
-    -AccountPassword (ConvertTo-SecureString "P@ssw0rd!" -AsPlainText -Force) `
-    -ChangePasswordAtLogon $true -Enabled $true
+echo "deb [trusted=yes] https://download.webmin.com/download/repository sarge contrib" \
+  | sudo tee /etc/apt/sources.list.d/webmin.list
+
+sudo apt update
 \end{lstlisting}
 \end{commandbox}
-
-% ----------------------------------------------------------------
-\subsection{Cr\'eation des groupes de s\'ecurit\'e}
-% ----------------------------------------------------------------
-
-\textit{ADUC $\rightarrow$ OU cible $\rightarrow$ Nouveau $\rightarrow$ Groupe
-$\rightarrow$ \'Etendue : Globale / Type : S\'ecurit\'e $\rightarrow$ Ajouter membres}
-
-\begin{table}[H]
-  \centering
-  \caption{Groupes de s\'ecurit\'e et membres}
-  \begin{tabular}{@{}lll@{}}
-    \toprule
-    \textbf{Groupe}       & \textbf{OU}    & \textbf{Membres} \\
-    \midrule
-    GRP\_Informatique & Informatique & ali.benali, yasser.namez \\
-    GRP\_RH           & RH           & fatima.zahra             \\
-    GRP\_Direction    & Direction    & admin.dir                \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-\begin{commandbox}
-\begin{lstlisting}
-New-ADGroup -Name "GRP_Informatique" -GroupScope Global `
-    -GroupCategory Security -Path "OU=Informatique,DC=lab,DC=local"
-
-Add-ADGroupMember -Identity "GRP_Informatique" `
-    -Members ali.benali, yasser.namez
-\end{lstlisting}
-\end{commandbox}
-
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.85\textwidth]{captures/16_group_members.png}
-  \caption{Membres ajout\'es au groupe --- onglet Membres}
-  \label{fig:16_group_members}
+  \includegraphics[width=0.9\textwidth]{figures/webmin_repo.png}
+  \caption{Figure 7 — Ajout du d\'ep\^ot Webmin avec l'option trusted=yes}
 \end{figure}
 
-% ----------------------------------------------------------------
-\subsection{V\'erification finale}
-% ----------------------------------------------------------------
+\subsubsection*{4. Installation de Webmin}
 
 \begin{commandbox}
 \begin{lstlisting}
-Get-ADDomain
-Get-ADOrganizationalUnit -Filter * | Select Name, DistinguishedName
-Get-ADUser -Filter * | Select Name, SamAccountName, Enabled
-Get-ADGroupMember -Identity "GRP_Informatique" | Select Name
-dcdiag /test:DNS
+sudo apt install -y webmin
 \end{lstlisting}
 \end{commandbox}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.7\textwidth]{figures/webmin_install.png}
+  \caption{Figure 8 — Fin de l'installation de Webmin avec g\'en\'eration du certificat SSL}
+\end{figure}
+
+\begin{definitionbox}{Note}
+Webmin g\'en\`ere automatiquement un certificat SSL auto-sign\'e lors de l'installation, ce qui permet un acc\`es s\'ecuris\'e via HTTPS d\`es le premier lancement.
+\end{definitionbox}
+
+% ----------------------------------------------------------------
+\subsection{\'Etape 4 — V\'erification du service Webmin}
+
+Apr\`es l'installation, on v\'erifie que le service Webmin est actif.
+
+\begin{commandbox}
+\begin{lstlisting}
+sudo systemctl status webmin
+\end{lstlisting}
+\end{commandbox}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/webmin_status.png}
+  \caption{Figure 9 — Statut du service Webmin : active (running)}
+\end{figure}
+
+\begin{resultatbox}
+Le statut \texttt{active (running)} confirme que le service Webmin fonctionne correctement. Le service est g\'er\'e par \textbf{systemd}, qui assure son d\'emarrage automatique au boot du syst\`eme.
+\end{resultatbox}
+
+% ----------------------------------------------------------------
+\subsection{\'Etape 5 — Acc\`es \`a l'interface Webmin}
+
+Webmin \'ecoute sur le port \textbf{10000} en HTTPS. Pour y acc\'eder :
+
+\begin{enumerate}
+  \item Ouvrir un navigateur et saisir l'URL : \texttt{https://<IP-PUBLIQUE>:10000}
+  \item Accepter le certificat SSL auto-sign\'e (avertissement de s\'ecurit\'e normal).
+  \item Se connecter avec les identifiants du syst\`eme (utilisateur \texttt{ubuntu} ou \texttt{root}).
+\end{enumerate}
+
+Si n\'ecessaire, d\'efinir un mot de passe root :
+
+\begin{commandbox}
+\begin{lstlisting}
+sudo passwd root
+\end{lstlisting}
+\end{commandbox}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/webmin_login.png}
+  \caption{Figure 10 — Page de connexion Webmin accessible via HTTPS:10000}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/webmin_dashboard.png}
+  \caption{Figure 11 — Tableau de bord Webmin avec les informations syst\`eme}
+\end{figure}
+
+% ----------------------------------------------------------------
+\subsection{\'Etape 6 — Tests dans Webmin}
+
+\subsubsection*{6.1 Gestion des utilisateurs et des groupes}
+
+\textbf{Chemin :} \textit{Modules $\rightarrow$ System $\rightarrow$ Users and Groups}
+
+\begin{itemize}
+  \item Cr\'eation d'un utilisateur \textbf{ACSRI} avec mot de passe \texttt{TEST}, r\'epertoire \texttt{/home/ACSRI} et shell \texttt{/bin/bash}.
+  \item Cr\'eation d'un groupe \textbf{Yasser} et ajout de l'utilisateur ACSRI dans ce groupe.
+\end{itemize}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/users_creation.png}
+  \caption{Figure 12 — Formulaire de cr\'eation de l'utilisateur ACSRI dans Webmin}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/group_creation.png}
+  \caption{Figure 13 — Cr\'eation du groupe Yasser et attribution de membres}
+\end{figure}
+
+\subsubsection*{6.2 Gestion des services systemd}
+
+\textbf{Chemin :} \textit{Modules $\rightarrow$ System $\rightarrow$ Bootup and Shutdown}
+
+\begin{itemize}
+  \item Arr\^et du service \texttt{bolt} : clic sur \textbf{Stop}.
+  \item Red\'emarrage du service : clic sur \textbf{Start}.
+\end{itemize}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/service_stop.png}
+  \caption{Figure 14 — Arr\^et du service bolt via Webmin}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/service_restart.png}
+  \caption{Figure 15 — Red\'emarrage du service bolt via Webmin}
+\end{figure}
+
+\begin{resultatbox}
+La gestion des services systemd via Webmin fonctionne correctement et permet de contr\^oler efficacement les services Linux sans passer par le terminal.
+\end{resultatbox}
+
+\subsubsection*{6.3 Gestionnaire de fichiers (File Manager)}
+
+\textbf{Chemin :} \textit{Modules $\rightarrow$ Tools $\rightarrow$ File Manager}
+
+\begin{itemize}
+  \item Navigation dans les r\'epertoires \texttt{/etc}, \texttt{/var/log}, \texttt{/home}.
+  \item Cr\'eation d'un fichier \texttt{index\_test.html} dans \texttt{/var/www/} avec un contenu HTML simple.
+  \item Modification du fichier via l'\'editeur int\'egr\'e.
+\end{itemize}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/file_manager.png}
+  \caption{Figure 16 — Interface du File Manager de Webmin}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/file_edit.png}
+  \caption{Figure 17 — \'Edition du fichier index\_test.html dans l'\'editeur int\'egr\'e}
+\end{figure}
+
+\subsubsection*{6.4 Pare-feu UFW}
+
+\textbf{Chemin :} \textit{Modules $\rightarrow$ Networking $\rightarrow$ Linux Firewall}
+
+\begin{itemize}
+  \item Ajout d'une r\`egle pour autoriser les connexions entrantes sur le port \textbf{80} (HTTP).
+  \item Consultation des r\`egles iptables en vigueur.
+\end{itemize}
+
+\begin{commandbox}
+\begin{lstlisting}
+# Activation d'UFW et ouverture des ports essentiels
+sudo ufw allow 22
+sudo ufw allow 10000
+sudo ufw enable
+\end{lstlisting}
+\end{commandbox}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/firewall_rule.png}
+  \caption{Figure 18 — Ajout d'une r\`egle UFW pour le port 80 (HTTP)}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{figures/iptables.png}
+  \caption{Figure 19 — Vue des r\`egles iptables actives dans Webmin}
+\end{figure}
+
+\subsubsection*{6.5 Configuration SSH}
+
+\textbf{Chemin :} \textit{Modules $\rightarrow$ Servers $\rightarrow$ SSH Server}
+
+Les param\`etres SSH suivants ont \'et\'e modifi\'es :
+\begin{itemize}
+  \item \textbf{Port SSH} : modifi\'e vers le port \texttt{2222} pour r\'eduire l'exposition aux scans automatiques.
+  \item \textbf{Nombre de tentatives de connexion} : limit\'e (MaxAuthTries = 3).
+  \item \textbf{Authentification par mot de passe} : activ\'ee.
+  \item \textbf{Connexion root} : configur\'ee pour l'interdire (\texttt{PermitRootLogin no}).
+\end{itemize}
+
+% \begin{figure}[H]
+%   \centering
+%   \includegraphics[width=0.9\textwidth]{figures/ssh_config.png}
+%   \caption{Figure 20 — Configuration du serveur SSH via Webmin}
+% \end{figure}
+
+% \begin{figure}[H]
+%   \centering
+%   \includegraphics[width=0.9\textwidth]{figures/ssh_auth.png}
+%   \caption{Figure 21 — Options d'authentification SSH (root, mot de passe, tentatives)}
+% \end{figure}
+
+
+\begin{enumerate}
+
+  \item \textbf{Erreurs de d\'ep\^ot Webmin (signature DSA)} \\
+  Le d\'ep\^ot Webmin utilise une signature DSA non support\'ee par APT moderne, g\'en\'erant une erreur lors du \texttt{apt update}. \\
+  \textit{Solution :} utilisation de l'option \texttt{trusted=yes} dans la d\'eclaration du d\'ep\^ot.
+
+  \item \textbf{Connexion SSH et permissions de la cl\'e \texttt{.pem}} \\
+  SSH refuse les cl\'es priv\'ees trop permissives (erreur \textit{Permissions 0644 are too open}). \\
+  \textit{Solution :} appliquer \texttt{chmod 400 Webmin.pem} avant toute connexion.
+
+  \item \textbf{Connexion \`a Webmin et mot de passe} \\
+  L'interface Webmin utilise les comptes syst\`eme Linux. En cas de mot de passe root inconnu, la commande \texttt{sudo passwd root} permet de le red\'efinir.
+
+  \item \textbf{Certificat SSL auto-sign\'e} \\
+  Le navigateur affiche un avertissement de s\'ecurit\'e (\textit{Your connection is not private}). \\
+  \textit{Solution :} accepter manuellement le certificat en cliquant sur \textit{Avanced $\rightarrow$ Proceed}.
+
+  \item \textbf{Mauvaise configuration du pare-feu UFW} \\
+  Une activation d'UFW sans pr\'ealablement autoriser les ports 22 et 10000 coupe l'acc\`es SSH et Webmin. \\
+  \textit{Solution :} toujours ex\'ecuter \texttt{ufw allow 22} et \texttt{ufw allow 10000} avant \texttt{ufw enable}.
+
+  \item \textbf{Modification du port SSH} \\
+  Apr\`es avoir chang\'e le port SSH depuis Webmin, la prochaine connexion SSH doit sp\'ecifier le nouveau port avec \texttt{ssh -p <nouveau\_port>}, sinon la connexion \'echoue.
+
+\end{enumerate}
 
 % ================================================================
 \section{Conclusion}
-% ================================================================
 
-Ces travaux pratiques ont permis de d\'eployer une infrastructure Active Directory
-fonctionnelle. Les comp\'etences acquises couvrent~:
+Ce laboratoire a permis d'acqu\'erir une exp\'erience concr\`ete de l'administration d'un serveur Linux dans le cloud, depuis le d\'eploiement jusqu'\`a la s\'ecurisation, en passant par la gestion des ressources syst\`eme.
 
+\textbf{Comp\'etences acquises :}
 \begin{itemize}
-  \item L'installation et la configuration de base de \textbf{Windows Server 2025}.
-  \item Le d\'eploiement du r\^ole \textbf{AD DS} et la promotion en contr\^oleur de domaine.
-  \item La structuration de l'annuaire via des \textbf{OU}, des \textbf{utilisateurs}
-        et des \textbf{groupes de s\'ecurit\'e}.
-  \item L'utilisation de \textbf{PowerShell} pour l'automatisation des t\^aches d'administration.
+  \item D\'eploiement d'une instance EC2 sur AWS avec configuration r\'eseau ad\'equate.
+  \item Installation et configuration de Webmin sur Ubuntu Server.
+  \item Administration graphique d'un serveur Linux (utilisateurs, services, fichiers, cron).
+  \item Mise en place d'une s\'ecurit\'e de base : pare-feu UFW, restriction SSH, HTTPS.
 \end{itemize}
 
-Cet environnement servira de base pour les prochains TP (GPO, partage de ressources,
-int\'egration de machines clientes au domaine).
+\textbf{Points importants \`a retenir :}
+\begin{itemize}
+  \item Webmin simplifie consid\'erablement l'administration syst\`eme, mais une bonne compr\'ehension des commandes Linux sous-jacentes reste indispensable pour diagnostiquer les probl\`emes.
+  \item La s\'ecurit\'e d'un serveur cloud n\'ecessite une approche multicouche : groupe de s\'ecurit\'e AWS, pare-feu syst\`eme (UFW), et configuration applicative (SSH, HTTPS).
+  \item La gestion des cl\'es SSH et des permissions de fichiers est cruciale pour \'eviter les \'echecs de connexion.
+\end{itemize}
 
+\textbf{Perspectives d'am\'elioration :}
+\begin{itemize}
+  \item Approfondir la configuration du serveur web Apache ou Nginx via Webmin.
+  \item Mettre en place un certificat SSL valide (Let's Encrypt) pour remplacer le certificat auto-sign\'e.
+  \item Configurer des r\`egles de firewall plus complexes et des alertes de monitoring.
+  \item Explorer les modules avanc\'es de Webmin (Samba, Bind DNS, etc.).
+\end{itemize}
+
+% ================================================================
 \end{document}

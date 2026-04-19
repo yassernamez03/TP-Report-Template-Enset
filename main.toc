@@ -1,16 +1,11 @@
 \babel@toc {french}{}\relax 
 \contentsline {section}{\numberline {1}Introduction}{2}{section.1}%
-\contentsline {section}{\numberline {2}TP 1 --- Installation de Windows Server 2025}{3}{section.2}%
-\contentsline {subsection}{\numberline {2.1}Installation du syst\`eme d'exploitation}{3}{subsection.2.1}%
-\contentsline {subsection}{\numberline {2.2}Configuration de l'adresse IP statique}{4}{subsection.2.2}%
-\contentsline {subsection}{\numberline {2.3}D\'esactivation du pare-feu}{5}{subsection.2.3}%
-\contentsline {subsection}{\numberline {2.4}Renommage du serveur}{6}{subsection.2.4}%
-\contentsline {section}{\numberline {3}TP 2 --- Active Directory Domain Services}{8}{section.3}%
-\contentsline {subsection}{\numberline {3.1}Architecture d\'eploy\'ee}{8}{subsection.3.1}%
-\contentsline {subsection}{\numberline {3.2}Installation du r\^ole AD DS}{8}{subsection.3.2}%
-\contentsline {subsection}{\numberline {3.3}Promotion en contr\^oleur de domaine}{9}{subsection.3.3}%
-\contentsline {subsection}{\numberline {3.4}Cr\'eation des Unit\'es d'Organisation (OU)}{11}{subsection.3.4}%
-\contentsline {subsection}{\numberline {3.5}Cr\'eation des comptes utilisateurs}{12}{subsection.3.5}%
-\contentsline {subsection}{\numberline {3.6}Cr\'eation des groupes de s\'ecurit\'e}{12}{subsection.3.6}%
-\contentsline {subsection}{\numberline {3.7}V\'erification finale}{13}{subsection.3.7}%
-\contentsline {section}{\numberline {4}Conclusion}{14}{section.4}%
+\contentsline {section}{\numberline {2}Objectifs du Laboratoire}{2}{section.2}%
+\contentsline {section}{\numberline {3}Description des Manipulations}{2}{section.3}%
+\contentsline {subsection}{\numberline {3.1}\'Etape 1 — Cr\'eation d'une instance EC2 AWS}{2}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}\'Etape 2 — Connexion au serveur via SSH}{4}{subsection.3.2}%
+\contentsline {subsection}{\numberline {3.3}\'Etape 3 — Installation de Webmin}{5}{subsection.3.3}%
+\contentsline {subsection}{\numberline {3.4}\'Etape 4 — V\'erification du service Webmin}{8}{subsection.3.4}%
+\contentsline {subsection}{\numberline {3.5}\'Etape 5 — Acc\`es \`a l'interface Webmin}{8}{subsection.3.5}%
+\contentsline {subsection}{\numberline {3.6}\'Etape 6 — Tests dans Webmin}{10}{subsection.3.6}%
+\contentsline {section}{\numberline {4}Conclusion}{15}{section.4}%
