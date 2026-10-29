@@ -46,12 +46,21 @@
 \newtcolorbox{resultatbox}{colback=green!5,colframe=terminalgreen,fonttitle=\bfseries,title=R\'esultat}
 \newtcolorbox{alertbox}{colback=red!5,colframe=red!60!black,fonttitle=\bfseries,title={\ding{43}} Attention}
 
+% Emplacement de capture d'ecran : remplacer par
+% \includegraphics[width=\textwidth]{images/nom.png}
+\newcommand{\capture}[2]{%
+  \begin{figure}[H]
+    \centering
+    \fbox{\parbox[c][4.5cm][c]{0.85\textwidth}{\centering\textcolor{darkgray}{Capture \`a ins\'erer : #1}}}
+    \caption{#2}
+  \end{figure}}
+
 % ------------------------------------------------------------------
 \begin{document}
 
-\titre{TP : D\'eploiement et Administration\\d'un Serveur Linux sur AWS avec Webmin}
-\sujet{Module : Administration et S\'ecurit\'e des Syst\`emes et R\'eseaux}
-\enseignant{Pr. Azeddine \textsc{KHIAT}}
+\titre{Devoir d'application : Authentification et autorisation\\avec Spring Security, JWT et React}
+\sujet{Module : S\'ecurit\'e des syst\`emes distribu\'es}
+\enseignant{Pr. Abdelmajid \textsc{BOUSSELHAM}}
 \eleves{Yasser \textsc{NAMEZ}}
 
 \fairemarges
@@ -62,417 +71,565 @@
 % ================================================================
 \section{Introduction}
 
-Dans ce laboratoire, l'objectif est de cr\'eer et configurer un serveur Linux dans le cloud afin de comprendre les bases de l'administration syst\`eme \`a distance. Pour cela, nous avons utilis\'e la plateforme \textbf{Amazon Web Services (AWS)}, et plus pr\'ecis\'ement le service \textbf{Amazon EC2}, pour d\'eployer une instance Ubuntu 22.04 LTS.
-
-L'outil central de ce lab est \textbf{Webmin}, une interface web d'administration syst\`eme pour Linux. Gr\^ace \`a lui, il est possible de g\'erer un serveur complet — utilisateurs, services, firewall, configuration r\'eseau, SSH, Cron, etc. — depuis un simple navigateur, sans recourir syst\'ematiquement au terminal.
-
-Ce rapport pr\'esente les diff\'erentes \'etapes r\'ealis\'ees : la cr\'eation de l'instance EC2, la connexion SSH au serveur, l'installation et la configuration de Webmin, les tests fonctionnels effectu\'es sur les modules cl\'es, ainsi que la s\'ecurisation simple du serveur.
-
-\subsection*{Outils et technologies utilis\'es}
-
-\begin{itemize}
-  \item \textbf{Amazon EC2} : service AWS permettant de cr\'eer et g\'erer des serveurs virtuels dans le cloud.
-  \item \textbf{Ubuntu Server 22.04 LTS} : syst\`eme d'exploitation install\'e sur l'instance.
-  \item \textbf{Webmin} : interface web d'administration Linux (utilisateurs, services, firewall, SSH, Cron\ldots).
-  \item \textbf{Git Bash / Terminal SSH} : outil de connexion au serveur depuis Windows.
-  \item \textbf{Navigateur web} : acc\`es \`a l'interface Webmin via HTTPS sur le port 10000.
-\end{itemize}
-
-% ================================================================
-\section{Objectifs du Laboratoire}
+Ce devoir consiste \`a d\'evelopper une application web de d\'eclaration et de suivi d'incidents informatiques et de cybers\'ecurit\'e (malware, phishing, panne r\'eseau, fuite de donn\'ees, etc.). L'application g\`ere trois types d'utilisateurs : \texttt{EMPLOYEE}, \texttt{TECHNICIAN} et \texttt{ADMIN}.
 
 \begin{objectifbox}
 \begin{itemize}
-  \item Comprendre le r\^ole de Webmin dans l'administration Linux.
-  \item D\'eployer un serveur Linux (Ubuntu) sur AWS via EC2.
-  \item Installer et configurer Webmin correctement sur Ubuntu/Debian.
-  \item Acc\'eder \`a Webmin en HTTPS sur le port 10000.
-  \item Administrer un serveur via Webmin : utilisateurs, services, firewall, SSH, Cron, monitoring.
-  \item S\'ecuriser l'acc\`es au serveur avec UFW et HTTPS.
+  \item Mettre en place l'authentification avec JWT.
+  \item G\'erer les r\^oles et prot\'eger les routes du backend et de React.
+  \item Contr\^oler l'acc\`es aux donn\'ees (propri\'etaire d'un incident).
+  \item Valider les donn\'ees et g\'erer proprement les erreurs.
+  \item Fournir un tableau de bord et un historique des incidents.
 \end{itemize}
 \end{objectifbox}
 
-% ================================================================
-\section{Description des Manipulations}
+\subsection{Technologies utilis\'ees}
 
-% ----------------------------------------------------------------
-\subsection{\'Etape 1 — Cr\'eation d'une instance EC2 AWS}
+\begin{itemize}
+  \item \textbf{Backend} : Spring Boot 3, Spring Security, Spring Data JPA, Bean Validation, jjwt, base H2.
+  \item \textbf{Frontend} : React (Vite), React Router, Axios.
+  \item \textbf{Tests} : Postman.
+\end{itemize}
 
-La premi\`ere \'etape consiste \`a cr\'eer une machine virtuelle (instance) sur le cloud AWS.
+\subsection{Lancement de l'application}
 
-\begin{enumerate}
-  \item Se connecter \`a la console AWS et naviguer vers \textbf{EC2 $\rightarrow$ Launch Instance}.
-  \item Choisir les param\`etres suivants :
-  \begin{itemize}
-    \item \textbf{AMI} : Ubuntu Server 22.04 LTS (HVM), SSD Volume Type
-    \item \textbf{Type d'instance} : \texttt{t2.micro} (\'eligible \`a l'offre gratuite)
-    \item \textbf{Paire de cl\'es} : cr\'eation d'une nouvelle cl\'e SSH (\texttt{Webmin.pem})
-    \item \textbf{Groupe de s\'ecurit\'e} : ouverture des ports suivants :
-  \end{itemize}
-\end{enumerate}
+\begin{lstlisting}
+# Backend (port 8080)
+cd backend
+mvn spring-boot:run
+
+# Frontend (port 5173)
+cd frontend
+npm install
+npm run dev
+\end{lstlisting}
+
+Trois comptes de test sont cr\'e\'es au d\'emarrage du backend :
 
 \begin{center}
-\begin{tabular}{@{}lll@{}}
+\begin{tabular}{llll}
 \toprule
-\textbf{Port} & \textbf{Service} & \textbf{Description} \\
+\textbf{R\^ole} & \textbf{Email} & \textbf{Mot de passe} \\
 \midrule
-22    & SSH   & Acc\`es serveur via terminal \\
-10000 & Webmin & Interface d'administration web \\
-443   & HTTPS  & Panneaux Webmin / SSL \\
-80    & HTTP   & Si modules web actifs \\
+ADMIN & \texttt{admin@test.com} & \texttt{admin123} \\
+TECHNICIAN & \texttt{tech@test.com} & \texttt{tech123} \\
+EMPLOYEE & \texttt{employee@test.com} & \texttt{emp123} \\
 \bottomrule
 \end{tabular}
-\captionof{table}{Ports ouverts dans le groupe de s\'ecurit\'e EC2}
+\end{center}
+
+% ================================================================
+\section{Architecture g\'en\'erale}
+
+L'application est compos\'ee de deux projets : un frontend React et un backend Spring Boot. Le frontend envoie des requ\^etes HTTP/JSON avec le header \texttt{Authorization: Bearer JWT}. Dans le backend, chaque requ\^ete traverse le filtre JWT de Spring Security, puis les controllers, les services et les repositories avant d'atteindre la base de donn\'ees.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/architecture-diagram.png}
+\caption{Architecture g\'en\'erale de l'application}
+\end{figure}
+
+% ================================================================
+\section{Mod\`ele de donn\'ees}
+
+\subsection{Diagramme des entit\'es}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{figures/entity-diagram.png}
+\caption{Diagramme des entit\'es}
+\end{figure}
+
+\subsection{Travail de recherche : relations JPA}
+
+\begin{definitionbox}{\texttt{@ManyToOne} et \texttt{@OneToMany}}
+\texttt{@ManyToOne} indique que plusieurs objets d'une classe sont li\'es \`a un seul objet d'une autre classe. Dans la base, la cl\'e \'etrang\`ere est plac\'ee dans la table qui porte l'annotation. \texttt{@OneToMany} est le c\^ot\'e inverse : un objet poss\`ede une liste d'objets, avec \texttt{mappedBy} pour indiquer le champ \texttt{@ManyToOne} correspondant.
+\end{definitionbox}
+
+Dans notre projet, plusieurs incidents sont li\'es \`a un utilisateur :
+
+\begin{lstlisting}[language=Java]
+@ManyToOne(fetch = FetchType.LAZY)
+private User createdBy;
+
+@ManyToOne(fetch = FetchType.LAZY)
+private User assignedTo;
+\end{lstlisting}
+
+\textbf{LAZY ou EAGER ?}
+
+\begin{center}
+\begin{tabular}{p{2cm}p{6.5cm}p{5.5cm}}
+\toprule
+ & \textbf{Fonctionnement} & \textbf{Inconv\'enient} \\
+\midrule
+\textbf{EAGER} & L'objet li\'e est charg\'e imm\'ediatement, avec l'entit\'e principale. & Charge des donn\'ees inutiles et ajoute des jointures. \\
+\textbf{LAZY} & L'objet li\'e n'est charg\'e que lors du premier acc\`es. & Provoque une \texttt{LazyInitializationException} hors transaction. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Justification de nos choix :}
+\begin{itemize}
+  \item Nous utilisons \texttt{LAZY} partout : l'utilisateur li\'e \`a un incident n'est charg\'e que si on en a besoin. Par d\'efaut, \texttt{@ManyToOne} est EAGER, d'o\`u le choix explicite de LAZY.
+  \item Le probl\`eme du LAZY est r\'esolu en convertissant les entit\'es en DTO \`a l'int\'erieur d'un service annot\'e \texttt{@Transactional}. Les entit\'es ne sont jamais renvoy\'ees directement en JSON.
+  \item Nous n'avons pas utilis\'e de \texttt{@OneToMany} (pas de liste d'incidents dans \texttt{User}) : ce n'est pas n\'ecessaire, et cela \'evite les boucles de s\'erialisation JSON. L'historique et les notes sont r\'ecup\'er\'es avec des requ\^etes de repository.
+\end{itemize}
+
+% ================================================================
+\section{Authentification et JWT}
+
+\subsection{Endpoints publics}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{M\'ethode} & \textbf{Endpoint} & \textbf{Description} \\
+\midrule
+POST & \texttt{/auth/register} & Cr\'eer un compte (r\^ole EMPLOYEE) \\
+POST & \texttt{/auth/login} & Se connecter, retourne \texttt{token}, \texttt{role}, \texttt{fullName} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Lors de l'inscription, le r\^ole est impos\'e par le backend (\texttt{Role.EMPLOYEE}). L'objet \texttt{RegisterRequest} ne contient pas de champ \texttt{role} : l'utilisateur ne peut donc pas choisir son r\^ole. Les mots de passe sont encod\'es avec \textbf{BCrypt}.
+
+\subsection{Travail de recherche : les claims JWT}
+
+\begin{definitionbox}{Qu'est-ce qu'un claim ?}
+Un JWT est compos\'e de trois parties : \emph{header}, \emph{payload} et \emph{signature}. Le payload contient des \textbf{claims}, c'est-\`a-dire des informations sur l'utilisateur et sur le token. Il existe des claims standards (\texttt{sub} : sujet, \texttt{iat} : date de cr\'eation, \texttt{exp} : date d'expiration) et des claims personnalis\'es, comme le r\^ole.
+\end{definitionbox}
+
+Notre token contient : l'email (\texttt{sub}), le r\^ole (claim \texttt{role}), la date de cr\'eation (\texttt{iat}) et la date d'expiration (\texttt{exp}).
+
+\textbf{Ajouter un r\^ole dans le token :}
+
+\begin{lstlisting}[language=Java]
+Jwts.builder()
+    .subject(email)
+    .claim("role", role)
+    .issuedAt(now)
+    .expiration(new Date(now.getTime() + expirationMs))
+    .signWith(key)
+    .compact();
+\end{lstlisting}
+
+\textbf{R\'ecup\'erer un claim :}
+
+\begin{lstlisting}[language=Java]
+Claims claims = Jwts.parser().verifyWith(key).build()
+        .parseSignedClaims(token).getPayload();
+String email = claims.getSubject();
+String role  = claims.get("role", String.class);
+\end{lstlisting}
+
+\textbf{V\'erifier l'expiration :} la m\'ethode \texttt{parseSignedClaims} v\'erifie automatiquement la signature et la date d'expiration. Si le token est expir\'e, elle l\`eve une \texttt{ExpiredJwtException} (sous-classe de \texttt{JwtException}). Si le token est invalide, une autre \texttt{JwtException} est lev\'ee. Dans les deux cas, le filtre n'authentifie pas la requ\^ete et l'API r\'epond \textbf{401}.
+
+La dur\'ee de vie du token est de \textbf{5 minutes} (propri\'et\'e \texttt{jwt.expiration-minutes}), ce qui permet de tester facilement l'expiration.
+
+% ================================================================
+\section{Configuration de Spring Security}
+
+\begin{itemize}
+  \item Routes publiques : \texttt{/auth/**} et \texttt{/h2-console/**}.
+  \item Routes prot\'eg\'ees : \texttt{/api/**} (token obligatoire).
+  \item \texttt{/api/admin/**} : r\'eserv\'e au r\^ole ADMIN.
+  \item Sessions : \texttt{SessionCreationPolicy.STATELESS} (aucune session c\^ot\'e serveur).
+  \item CORS : autorise l'origine \texttt{http://localhost:5173}.
+\end{itemize}
+
+\begin{lstlisting}[language=Java]
+http
+  .csrf(csrf -> csrf.disable())
+  .cors(Customizer.withDefaults())
+  .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+  .authorizeHttpRequests(auth -> auth
+      .requestMatchers("/auth/**").permitAll()
+      .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
+      .requestMatchers("/api/admin/**").hasRole("ADMIN")
+      .requestMatchers("/api/**").authenticated()
+      .anyRequest().authenticated())
+  .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+\end{lstlisting}
+
+\subsection{Le filtre JWT}
+
+Le filtre \texttt{JwtFilter} s'ex\'ecute \`a chaque requ\^ete :
+\begin{enumerate}
+  \item il lit le header \texttt{Authorization: Bearer ...} ;
+  \item il v\'erifie le token et extrait l'email et le r\^ole ;
+  \item il v\'erifie que le compte existe et qu'il est activ\'e (\texttt{enabled}) ;
+  \item il place l'utilisateur et son r\^ole dans le \texttt{SecurityContextHolder}.
+\end{enumerate}
+
+Si le token est absent, invalide ou expir\'e, aucune authentification n'est cr\'e\'ee et Spring Security renvoie une r\'eponse \textbf{401} en JSON.
+
+% ================================================================
+\section{Gestion des r\^oles}
+
+Un JWT valide ne donne pas acc\`es \`a toutes les fonctionnalit\'es : chaque action est contr\^ol\'ee selon le r\^ole.
+
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Fonctionnalit\'e} & \textbf{EMPLOYEE} & \textbf{TECHNICIAN} & \textbf{ADMIN} \\
+\midrule
+Consulter / modifier son profil & \ding{51} & \ding{51} & \ding{51} \\
+Cr\'eer un incident & \ding{51} & \ding{55} & \ding{55} \\
+Consulter ses propres incidents & \ding{51} & \ding{55} & \ding{55} \\
+Consulter les incidents affect\'es & \ding{55} & \ding{51} & \ding{55} \\
+Modifier le statut d'un incident & \ding{55} & \ding{51} (les siens) & \ding{51} \\
+Ajouter une note de traitement & \ding{55} & \ding{51} (les siens) & \ding{55} \\
+Consulter tous les incidents & \ding{55} & \ding{55} & \ding{51} \\
+Affecter un technicien & \ding{55} & \ding{55} & \ding{51} \\
+G\'erer les utilisateurs & \ding{55} & \ding{55} & \ding{51} \\
+Consulter les statistiques & \ding{55} & \ding{55} & \ding{51} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Travail de recherche : s\'ecurisation par r\^ole}
+
+\begin{itemize}
+  \item \texttt{hasRole('ADMIN')} v\'erifie que l'utilisateur poss\`ede l'autorit\'e \texttt{ROLE\_ADMIN} (le pr\'efixe \texttt{ROLE\_} est ajout\'e automatiquement).
+  \item \texttt{hasAuthority('ROLE\_ADMIN')} compare la cha\^ine exacte, sans ajouter de pr\'efixe.
+  \item \texttt{@PreAuthorize} applique une r\`egle d'acc\`es sur une m\'ethode, avant son ex\'ecution.
+  \item \texttt{@EnableMethodSecurity} active la prise en compte de \texttt{@PreAuthorize}.
+\end{itemize}
+
+Dans le projet, le r\^ole est d\'eclar\'e dans le token, puis transform\'e en autorit\'e \texttt{ROLE\_xxx} par le filtre. Les controllers utilisent ensuite \texttt{@PreAuthorize} :
+
+\begin{lstlisting}[language=Java]
+@PostMapping
+@PreAuthorize("hasRole('EMPLOYEE')")
+public IncidentResponse create(@Valid @RequestBody CreateIncidentRequest request) { ... }
+
+@PutMapping("/{id}/assign/{technicianId}")
+@PreAuthorize("hasRole('ADMIN')")
+public IncidentResponse assign(@PathVariable Long id, @PathVariable Long technicianId) { ... }
+\end{lstlisting}
+
+\subsection{Endpoints de l'API}
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+\textbf{M\'ethode} & \textbf{URL} & \textbf{Acc\`es} \\
+\midrule
+GET / PUT & \texttt{/api/profile} & Authentifi\'e \\
+PUT & \texttt{/api/profile/password} & Authentifi\'e \\
+POST & \texttt{/api/incidents} & EMPLOYEE \\
+GET & \texttt{/api/incidents/my} & EMPLOYEE \\
+GET & \texttt{/api/incidents/assigned} & TECHNICIAN \\
+GET & \texttt{/api/incidents} & ADMIN \\
+GET & \texttt{/api/incidents/\{id\}} & Propri\'etaire ou r\^ole autoris\'e \\
+PUT & \texttt{/api/incidents/\{id\}/status} & TECHNICIAN ou ADMIN \\
+PUT & \texttt{/api/incidents/\{id\}/assign/\{technicianId\}} & ADMIN \\
+POST & \texttt{/api/incidents/\{id\}/comments} & TECHNICIAN \\
+GET & \texttt{/api/admin/users} & ADMIN \\
+PUT & \texttt{/api/admin/users/\{id\}/enable} & ADMIN \\
+PUT & \texttt{/api/admin/users/\{id\}/disable} & ADMIN \\
+GET & \texttt{/api/admin/statistics} & ADMIN \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ================================================================
+\section{Contr\^ole du propri\'etaire d'un incident}
+
+Un employ\'e peut tester directement l'URL \texttt{GET /api/incidents/12} dans Postman, m\^eme si l'incident ne lui appartient pas. Masquer un bouton dans React ne suffit donc pas : le backend doit v\'erifier l'acc\`es.
+
+\textbf{Solution :} la classe \texttt{CurrentUser} r\'ecup\`ere l'utilisateur connect\'e gr\^ace \`a \texttt{SecurityContextHolder} :
+
+\begin{lstlisting}[language=Java]
+String email = SecurityContextHolder.getContext()
+        .getAuthentication().getName();
+User user = userRepository.findByEmail(email).orElseThrow(...);
+\end{lstlisting}
+
+Ensuite, la m\'ethode \texttt{checkAccess} du service compare cet utilisateur au propri\'etaire de l'incident :
+
+\begin{lstlisting}[language=Java]
+private void checkAccess(Incident incident, User user) {
+    boolean allowed = switch (user.getRole()) {
+        case ADMIN -> true;
+        case EMPLOYEE -> incident.getCreatedBy().getId().equals(user.getId());
+        case TECHNICIAN -> incident.getAssignedTo() != null
+                && incident.getAssignedTo().getId().equals(user.getId());
+    };
+    if (!allowed) {
+        throw new ApiException(HttpStatus.FORBIDDEN, "Acces interdit");
+    }
+}
+\end{lstlisting}
+
+Cette m\'ethode est appel\'ee pour consulter un incident, changer son statut et ajouter une note. Un employ\'e qui demande l'incident d'un autre re\c{c}oit donc une r\'eponse \textbf{403}.
+
+\subsection{R\`egles m\'etier}
+
+\begin{center}
+\begin{tabular}{p{7.5cm}p{7cm}}
+\toprule
+\textbf{R\`egle} & \textbf{Impl\'ementation} \\
+\midrule
+Nouvel utilisateur = EMPLOYEE & \texttt{AuthService.register} impose le r\^ole \\
+Impossible de choisir ADMIN & Pas de champ \texttt{role} dans l'inscription \\
+Mots de passe en BCrypt & Bean \texttt{BCryptPasswordEncoder} \\
+Employ\'e : ses incidents uniquement & Requ\^ete par \texttt{createdBy} et \texttt{checkAccess} \\
+Technicien : incidents affect\'es uniquement & \texttt{checkAccess} (cas TECHNICIAN) \\
+Seul l'admin affecte un technicien & \texttt{@PreAuthorize("hasRole('ADMIN')")} \\
+Compte d\'esactiv\'e : connexion refus\'ee & Test dans \texttt{AuthService.login} et dans \texttt{JwtFilter} \\
+Incident CLOSED non modifiable & Test dans \texttt{updateStatus} (sauf ADMIN) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Historique et notes de traitement}
+
+Chaque changement important est enregistr\'e dans l'entit\'e \texttt{IncidentHistory} (cr\'eation, affectation, changement de statut). Les techniciens ajoutent des notes de traitement, enregistr\'ees dans \texttt{IncidentComment}. Les deux sont affich\'ees dans la page de d\'etail d'un incident.
+
+% ================================================================
+\section{Validation des donn\'ees}
+
+Les donn\'ees re\c{c}ues sont valid\'ees par le backend avec Bean Validation. Le controller utilise \texttt{@Valid} sur le corps de la requ\^ete, et les annotations sont plac\'ees dans les DTO.
+
+\begin{center}
+\begin{tabular}{lp{9cm}}
+\toprule
+\textbf{Annotation} & \textbf{R\^ole} \\
+\midrule
+\texttt{@NotBlank} & Le texte ne doit pas \^etre vide (titre, description, mot de passe) \\
+\texttt{@NotNull} & La valeur est obligatoire (priorit\'e, cat\'egorie, statut) \\
+\texttt{@Email} & Le format de l'email doit \^etre valide \\
+\texttt{@Size(min = 6)} & Longueur minimale du mot de passe \\
+\texttt{@Valid} & D\'eclenche la validation sur l'objet re\c{c}u \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{lstlisting}[language=Java]
+public record CreateIncidentRequest(
+    @NotBlank(message = "Le titre est obligatoire") String title,
+    @NotBlank(message = "La description est obligatoire") String description,
+    @NotNull(message = "La categorie est obligatoire") Category category,
+    @NotNull(message = "La priorite est obligatoire") Priority priority) {}
+\end{lstlisting}
+
+\begin{alertbox}
+La validation faite dans React n'est qu'une aide pour l'utilisateur. La vraie validation est toujours faite par le backend.
+\end{alertbox}
+
+% ================================================================
+\section{Gestion des exceptions}
+
+Les erreurs sont centralis\'ees dans une classe \texttt{GlobalExceptionHandler} annot\'ee \texttt{@RestControllerAdvice} (version de \texttt{@ControllerAdvice} qui renvoie directement du JSON). Chaque m\'ethode annot\'ee \texttt{@ExceptionHandler} g\`ere un type d'erreur.
+
+Une seule exception m\'etier, \texttt{ApiException}, contient le statut HTTP et le message. Toutes les erreurs ont le m\^eme format :
+
+\begin{lstlisting}
+{ "status": 404, "message": "Incident introuvable" }
+\end{lstlisting}
+
+\begin{center}
+\begin{tabular}{p{5.5cm}ll}
+\toprule
+\textbf{Cas g\'er\'e} & \textbf{Code} & \textbf{Message} \\
+\midrule
+Utilisateur introuvable & 404 & Utilisateur introuvable \\
+Incident introuvable & 404 & Incident introuvable \\
+Email d\'ej\`a utilis\'e & 409 & Email d\'ej\`a utilis\'e \\
+Mauvais mot de passe (connexion) & 401 & Email ou mot de passe incorrect \\
+Compte d\'esactiv\'e & 403 & Compte d\'esactiv\'e \\
+Acc\`es interdit & 403 & Acc\`es interdit \\
+Donn\'ees invalides & 400 & Message de la validation \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Travail de recherche : codes HTTP}
+
+\begin{center}
+\begin{tabular}{lp{5cm}p{6cm}}
+\toprule
+\textbf{Code} & \textbf{Signification} & \textbf{Exemple dans le projet} \\
+\midrule
+400 Bad Request & La requ\^ete est invalide. & Titre vide, JSON mal form\'e \\
+401 Unauthorized & L'utilisateur n'est pas authentifi\'e. & Pas de token, token invalide ou expir\'e \\
+403 Forbidden & L'utilisateur est authentifi\'e mais n'a pas le droit. & Employ\'e sur une route ADMIN \\
+404 Not Found & La ressource n'existe pas. & Incident introuvable \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+La diff\'erence importante est entre \textbf{401} (\og qui \^etes-vous ? \fg) et \textbf{403} (\og je sais qui vous \^etes, mais vous n'avez pas le droit \fg).
+
+% ================================================================
+\section{Frontend React}
+
+\subsection{Structure}
+
+\begin{lstlisting}
+src/
+  components/  Navbar, ProtectedRoute, RoleRoute, IncidentTable
+  pages/       Login, Register, Dashboard, Profile, MyIncidents, NewIncident,
+               IncidentDetails, AssignedIncidents, AdminUsers, AdminIncidents
+  services/    api.js, authService.js, incidentService.js
+  App.jsx, main.jsx
+\end{lstlisting}
+
+\subsection{Gestion du JWT}
+
+Apr\`es la connexion, le token, le r\^ole et le nom sont stock\'es dans le \texttt{localStorage}. Un \textbf{interceptor Axios} ajoute automatiquement le header \texttt{Authorization} \`a chaque requ\^ete :
+
+\begin{lstlisting}[language=Java]
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = "Bearer " + token;
+  }
+  return config;
+});
+\end{lstlisting}
+
+\subsection{Expiration du JWT}
+
+Un second interceptor traite les r\'eponses. Quand le backend renvoie \textbf{401}, le token est supprim\'e et l'utilisateur est redirig\'e vers la page Login avec le message \og Votre session a expir\'e \fg. Les erreurs 401 de \texttt{/auth/*} (mauvais mot de passe) sont ignor\'ees pour ne pas afficher ce message \`a tort.
+
+\begin{lstlisting}[language=Java]
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const isAuthRequest = error.config?.url?.startsWith("/auth/");
+    if (error.response?.status === 401 && !isAuthRequest) {
+      localStorage.clear();
+      window.location.href = "/login?expired=1";
+    }
+    return Promise.reject(error);
+  }
+);
+\end{lstlisting}
+
+\subsection{Protection des routes}
+
+\begin{itemize}
+  \item \texttt{ProtectedRoute} : si l'utilisateur n'a pas de token, il est redirig\'e vers \texttt{/login}.
+  \item \texttt{RoleRoute} : si le r\^ole n'est pas dans la liste autoris\'ee, l'utilisateur est redirig\'e vers l'accueil. Exemple : \texttt{/admin/users} n'est accessible qu'\`a un ADMIN.
+\end{itemize}
+
+\begin{alertbox}
+La protection des routes React am\'eliore l'exp\'erience utilisateur, mais la v\'eritable s\'ecurit\'e est assur\'ee par le backend.
+\end{alertbox}
+
+\subsection{Dashboards}
+
+\begin{itemize}
+  \item \textbf{EMPLOYEE} : nombre total d'incidents, OPEN, IN\_PROGRESS, RESOLVED/CLOSED et les derniers incidents.
+  \item \textbf{TECHNICIAN} : incidents affect\'es, critiques, en cours et r\'esolus.
+  \item \textbf{ADMIN} : utilisateurs, employ\'es, techniciens, incidents, OPEN, IN\_PROGRESS et CLOSED (endpoint \texttt{/api/admin/statistics}).
+\end{itemize}
+
+% ================================================================
+\section{Access Token et Refresh Token}
+
+Le Refresh Token est une partie optionnelle du devoir et n'a pas \'et\'e impl\'ement\'e. Voici le r\'esultat de la recherche.
+
+\begin{center}
+\begin{tabular}{p{2.8cm}p{6cm}p{5.5cm}}
+\toprule
+ & \textbf{Access Token} & \textbf{Refresh Token} \\
+\midrule
+\textbf{R\^ole} & Envoy\'e \`a chaque requ\^ete pour acc\'eder \`a l'API. & Sert uniquement \`a obtenir un nouvel Access Token. \\
+\textbf{Dur\'ee de vie} & Courte (quelques minutes). & Longue (jours ou semaines). \\
+\textbf{Risque} & Limit\'e, car il expire vite. & Plus \'elev\'e, il doit \^etre mieux prot\'eg\'e. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Fonctionnement :} \`a la connexion, le serveur renvoie les deux tokens. Quand l'Access Token expire, le client envoie le Refresh Token \`a \texttt{POST /auth/refresh} et re\c{c}oit un nouvel Access Token, sans que l'utilisateur ressaisisse son mot de passe.
+
+\textbf{D\'econnexion :} le client supprime les deux tokens, et le serveur doit invalider (supprimer ou marquer comme r\'evoqu\'e) le Refresh Token enregistr\'e, pour qu'il ne puisse plus servir.
+
+% ================================================================
+\section{Tests}
+
+\subsection{Sc\'enario fonctionnel}
+
+\begin{enumerate}
+  \item Cr\'eation de deux comptes EMPLOYEE, d'un TECHNICIAN et d'un ADMIN.
+  \item Le premier employ\'e d\'eclare deux incidents, le deuxi\`eme employ\'e en d\'eclare un.
+  \item Le premier employ\'e ne peut pas consulter l'incident du deuxi\`eme.
+  \item L'admin consulte tous les incidents et affecte un incident au technicien.
+  \item Le technicien consulte ses incidents, passe le statut \`a \texttt{IN\_PROGRESS} puis \texttt{RESOLVED}, et ajoute une note.
+  \item L'employ\'e se reconnecte et v\'erifie le nouvel \'etat et l'historique de son incident.
+\end{enumerate}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/login.png}
+\caption{Page de connexion}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/dashboard-employee.png}
+\caption{Dashboard de l'employ\'e}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/new-incident.png}
+\caption{D\'eclaration d'un incident}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/dashboard-admin.png}
+\caption{Dashboard de l'administrateur}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/incident-assign.png}
+\caption{Affectation d'un incident \`a un technicien}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/admin-users.png}
+\caption{Page de gestion des utilisateurs (ADMIN)}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/profile.png}
+\caption{Page de profil}
+\end{figure}
+
+
+\subsection{Tests de s\'ecurit\'e avec Postman}
+
+\begin{center}
+\begin{tabular}{clp{3.2cm}p{4.5cm}}
+\toprule
+\textbf{N$^\circ$} & \textbf{Test} & \textbf{R\'esultat attendu} \\
+\midrule
+1 & API prot\'eg\'ee sans JWT & 401 \\
+2 & JWT invalide & 401 \\
+3 & JWT expir\'e & 401 \\
+4 & EMPLOYEE sur une route ADMIN & 403 \\
+5 & EMPLOYEE sur l'incident d'un autre & 403 \\
+6 & TECHNICIAN sur un incident non affect\'e & 403 \\
+7 & Utilisateur d\'esactiv\'e qui se connecte & 403 \\
+8 & Inscription avec un email existant & 409 \\
+9 & Cr\'eation d'un incident avec donn\'ees invalides & 400 \\
+\bottomrule
+\end{tabular}
 \end{center}
 
 \begin{figure}[H]
-  \centering
-  \includegraphics[width=0.9\textwidth]{figures/ec2_creation.png}
-  \caption{Figure 1 — Console AWS EC2 : cr\'eation de l'instance Ubuntu}
+\centering
+\includegraphics[width=0.9\textwidth]{figures/test1.png}
+\caption{R\'esultat des tests de s\'ecurit\'e (Collection Runner)}
 \end{figure}
 
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.9\textwidth]{figures/ec2_security_group.png}
-  \caption{Figure 2 — Configuration du groupe de s\'ecurit\'e avec les ports requis}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.9\textwidth]{figures/ec2_launch_success.png}
-  \caption{Figure 3 — Lancement de l'instance avec succ\`es}
-\end{figure}
-
-\begin{resultatbox}
-L'instance EC2 Ubuntu 22.04 a \'et\'e cr\'e\'ee et lanc\'ee avec succ\`es. L'adresse IP publique a \'et\'e r\'ecup\'er\'ee pour les connexions SSH et Webmin.
-\end{resultatbox}
-
-% ----------------------------------------------------------------
-\subsection{\'Etape 2 — Connexion au serveur via SSH}
-
-Apr\`es le lancement de l'instance, la connexion au serveur se fait via SSH en utilisant la cl\'e priv\'ee g\'en\'er\'ee.
-
-\begin{commandbox}
-\begin{lstlisting}
-# Restriction des permissions de la cle privee (obligatoire sous Linux/macOS)
-chmod 400 Webmin.pem
-
-# Connexion SSH a l'instance EC2
-ssh -i "Webmin.pem" ubuntu@<IP-PUBLIQUE>
-\end{lstlisting}
-\end{commandbox}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.9\textwidth]{figures/ssh_connexion.png}
-  \caption{Figure 4 — Terminal affichant la commande SSH et la connexion r\'eussie}
-\end{figure}
-
-\begin{resultatbox}
-Connexion \'etablie avec succ\`es \`a l'instance EC2 via Git Bash sur Windows, gr\^ace \`a la cl\'e priv\'ee \texttt{Webmin.pem}, apr\`es configuration des permissions et validation de l'empreinte du serveur.
-\end{resultatbox}
-
-% ----------------------------------------------------------------
-\subsection{\'Etape 3 — Installation de Webmin}
-
-L'installation de Webmin se d\'eroule en plusieurs sous-\'etapes.
-
-\subsubsection*{1. Mise \`a jour du syst\`eme}
-
-\begin{commandbox}
-\begin{lstlisting}
-sudo apt update && sudo apt upgrade -y
-\end{lstlisting}
-\end{commandbox}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.9\textwidth]{figures/apt_update.png}
-  \caption{Figure 5 — R\'esultat de la mise \`a jour des paquets}
-\end{figure}
-
-\subsubsection*{2. Installation des d\'ependances}
-
-\begin{commandbox}
-\begin{lstlisting}
-sudo apt install -y wget curl apt-transport-https gnupg
-\end{lstlisting}
-\end{commandbox}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.9\textwidth]{figures/apt_dependencies.png}
-  \caption{Figure 6 — Installation des d\'ependances n\'ecessaires}
-\end{figure}
-
-\subsubsection*{3. Ajout du d\'ep\^ot Webmin}
-
-Le d\'ep\^ot officiel Webmin utilise une signature DSA non support\'ee par les versions r\'ecentes d'APT ; on utilise donc l'option \texttt{trusted=yes}.
-
-\begin{commandbox}
-\begin{lstlisting}
-echo "deb [trusted=yes] https://download.webmin.com/download/repository sarge contrib" \
-  | sudo tee /etc/apt/sources.list.d/webmin.list
-
-sudo apt update
-\end{lstlisting}
-\end{commandbox}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.9\textwidth]{figures/webmin_repo.png}
-  \caption{Figure 7 — Ajout du d\'ep\^ot Webmin avec l'option trusted=yes}
-\end{figure}
-
-\subsubsection*{4. Installation de Webmin}
-
-\begin{commandbox}
-\begin{lstlisting}
-sudo apt install -y webmin
-\end{lstlisting}
-\end{commandbox}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.7\textwidth]{figures/webmin_install.png}
-  \caption{Figure 8 — Fin de l'installation de Webmin avec g\'en\'eration du certificat SSL}
-\end{figure}
-
-\begin{definitionbox}{Note}
-Webmin g\'en\`ere automatiquement un certificat SSL auto-sign\'e lors de l'installation, ce qui permet un acc\`es s\'ecuris\'e via HTTPS d\`es le premier lancement.
-\end{definitionbox}
-
-% ----------------------------------------------------------------
-\subsection{\'Etape 4 — V\'erification du service Webmin}
-
-Apr\`es l'installation, on v\'erifie que le service Webmin est actif.
-
-\begin{commandbox}
-\begin{lstlisting}
-sudo systemctl status webmin
-\end{lstlisting}
-\end{commandbox}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.9\textwidth]{figures/webmin_status.png}
-  \caption{Figure 9 — Statut du service Webmin : active (running)}
-\end{figure}
-
-\begin{resultatbox}
-Le statut \texttt{active (running)} confirme que le service Webmin fonctionne correctement. Le service est g\'er\'e par \textbf{systemd}, qui assure son d\'emarrage automatique au boot du syst\`eme.
-\end{resultatbox}
-
-% ----------------------------------------------------------------
-\subsection{\'Etape 5 — Acc\`es \`a l'interface Webmin}
-
-Webmin \'ecoute sur le port \textbf{10000} en HTTPS. Pour y acc\'eder :
-
-\begin{enumerate}
-  \item Ouvrir un navigateur et saisir l'URL : \texttt{https://<IP-PUBLIQUE>:10000}
-  \item Accepter le certificat SSL auto-sign\'e (avertissement de s\'ecurit\'e normal).
-  \item Se connecter avec les identifiants du syst\`eme (utilisateur \texttt{ubuntu} ou \texttt{root}).
-\end{enumerate}
-
-Si n\'ecessaire, d\'efinir un mot de passe root :
-
-\begin{commandbox}
-\begin{lstlisting}
-sudo passwd root
-\end{lstlisting}
-\end{commandbox}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.9\textwidth]{figures/webmin_login.png}
-  \caption{Figure 10 — Page de connexion Webmin accessible via HTTPS:10000}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.9\textwidth]{figures/webmin_dashboard.png}
-  \caption{Figure 11 — Tableau de bord Webmin avec les informations syst\`eme}
-\end{figure}
-
-% ----------------------------------------------------------------
-\subsection{\'Etape 6 — Tests dans Webmin}
-
-\subsubsection*{6.1 Gestion des utilisateurs et des groupes}
-
-\textbf{Chemin :} \textit{Modules $\rightarrow$ System $\rightarrow$ Users and Groups}
-
-\begin{itemize}
-  \item Cr\'eation d'un utilisateur \textbf{ACSRI} avec mot de passe \texttt{TEST}, r\'epertoire \texttt{/home/ACSRI} et shell \texttt{/bin/bash}.
-  \item Cr\'eation d'un groupe \textbf{Yasser} et ajout de l'utilisateur ACSRI dans ce groupe.
-\end{itemize}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.9\textwidth]{figures/users_creation.png}
-  \caption{Figure 12 — Formulaire de cr\'eation de l'utilisateur ACSRI dans Webmin}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.9\textwidth]{figures/group_creation.png}
-  \caption{Figure 13 — Cr\'eation du groupe Yasser et attribution de membres}
-\end{figure}
-
-\subsubsection*{6.2 Gestion des services systemd}
-
-\textbf{Chemin :} \textit{Modules $\rightarrow$ System $\rightarrow$ Bootup and Shutdown}
-
-\begin{itemize}
-  \item Arr\^et du service \texttt{bolt} : clic sur \textbf{Stop}.
-  \item Red\'emarrage du service : clic sur \textbf{Start}.
-\end{itemize}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.9\textwidth]{figures/service_stop.png}
-  \caption{Figure 14 — Arr\^et du service bolt via Webmin}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.9\textwidth]{figures/service_restart.png}
-  \caption{Figure 15 — Red\'emarrage du service bolt via Webmin}
-\end{figure}
-
-\begin{resultatbox}
-La gestion des services systemd via Webmin fonctionne correctement et permet de contr\^oler efficacement les services Linux sans passer par le terminal.
-\end{resultatbox}
-
-\subsubsection*{6.3 Gestionnaire de fichiers (File Manager)}
-
-\textbf{Chemin :} \textit{Modules $\rightarrow$ Tools $\rightarrow$ File Manager}
-
-\begin{itemize}
-  \item Navigation dans les r\'epertoires \texttt{/etc}, \texttt{/var/log}, \texttt{/home}.
-  \item Cr\'eation d'un fichier \texttt{index\_test.html} dans \texttt{/var/www/} avec un contenu HTML simple.
-  \item Modification du fichier via l'\'editeur int\'egr\'e.
-\end{itemize}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.9\textwidth]{figures/file_manager.png}
-  \caption{Figure 16 — Interface du File Manager de Webmin}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.9\textwidth]{figures/file_edit.png}
-  \caption{Figure 17 — \'Edition du fichier index\_test.html dans l'\'editeur int\'egr\'e}
-\end{figure}
-
-\subsubsection*{6.4 Pare-feu UFW}
-
-\textbf{Chemin :} \textit{Modules $\rightarrow$ Networking $\rightarrow$ Linux Firewall}
-
-\begin{itemize}
-  \item Ajout d'une r\`egle pour autoriser les connexions entrantes sur le port \textbf{80} (HTTP).
-  \item Consultation des r\`egles iptables en vigueur.
-\end{itemize}
-
-\begin{commandbox}
-\begin{lstlisting}
-# Activation d'UFW et ouverture des ports essentiels
-sudo ufw allow 22
-sudo ufw allow 10000
-sudo ufw enable
-\end{lstlisting}
-\end{commandbox}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.9\textwidth]{figures/firewall_rule.png}
-  \caption{Figure 18 — Ajout d'une r\`egle UFW pour le port 80 (HTTP)}
-\end{figure}
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=0.9\textwidth]{figures/iptables.png}
-  \caption{Figure 19 — Vue des r\`egles iptables actives dans Webmin}
-\end{figure}
-
-\subsubsection*{6.5 Configuration SSH}
-
-\textbf{Chemin :} \textit{Modules $\rightarrow$ Servers $\rightarrow$ SSH Server}
-
-Les param\`etres SSH suivants ont \'et\'e modifi\'es :
-\begin{itemize}
-  \item \textbf{Port SSH} : modifi\'e vers le port \texttt{2222} pour r\'eduire l'exposition aux scans automatiques.
-  \item \textbf{Nombre de tentatives de connexion} : limit\'e (MaxAuthTries = 3).
-  \item \textbf{Authentification par mot de passe} : activ\'ee.
-  \item \textbf{Connexion root} : configur\'ee pour l'interdire (\texttt{PermitRootLogin no}).
-\end{itemize}
-
-% \begin{figure}[H]
-%   \centering
-%   \includegraphics[width=0.9\textwidth]{figures/ssh_config.png}
-%   \caption{Figure 20 — Configuration du serveur SSH via Webmin}
-% \end{figure}
-
-% \begin{figure}[H]
-%   \centering
-%   \includegraphics[width=0.9\textwidth]{figures/ssh_auth.png}
-%   \caption{Figure 21 — Options d'authentification SSH (root, mot de passe, tentatives)}
-% \end{figure}
-
-
-\begin{enumerate}
-
-  \item \textbf{Erreurs de d\'ep\^ot Webmin (signature DSA)} \\
-  Le d\'ep\^ot Webmin utilise une signature DSA non support\'ee par APT moderne, g\'en\'erant une erreur lors du \texttt{apt update}. \\
-  \textit{Solution :} utilisation de l'option \texttt{trusted=yes} dans la d\'eclaration du d\'ep\^ot.
-
-  \item \textbf{Connexion SSH et permissions de la cl\'e \texttt{.pem}} \\
-  SSH refuse les cl\'es priv\'ees trop permissives (erreur \textit{Permissions 0644 are too open}). \\
-  \textit{Solution :} appliquer \texttt{chmod 400 Webmin.pem} avant toute connexion.
-
-  \item \textbf{Connexion \`a Webmin et mot de passe} \\
-  L'interface Webmin utilise les comptes syst\`eme Linux. En cas de mot de passe root inconnu, la commande \texttt{sudo passwd root} permet de le red\'efinir.
-
-  \item \textbf{Certificat SSL auto-sign\'e} \\
-  Le navigateur affiche un avertissement de s\'ecurit\'e (\textit{Your connection is not private}). \\
-  \textit{Solution :} accepter manuellement le certificat en cliquant sur \textit{Avanced $\rightarrow$ Proceed}.
-
-  \item \textbf{Mauvaise configuration du pare-feu UFW} \\
-  Une activation d'UFW sans pr\'ealablement autoriser les ports 22 et 10000 coupe l'acc\`es SSH et Webmin. \\
-  \textit{Solution :} toujours ex\'ecuter \texttt{ufw allow 22} et \texttt{ufw allow 10000} avant \texttt{ufw enable}.
-
-  \item \textbf{Modification du port SSH} \\
-  Apr\`es avoir chang\'e le port SSH depuis Webmin, la prochaine connexion SSH doit sp\'ecifier le nouveau port avec \texttt{ssh -p <nouveau\_port>}, sinon la connexion \'echoue.
-
-\end{enumerate}
-
-% ================================================================
-\section{Conclusion}
-
-Ce laboratoire a permis d'acqu\'erir une exp\'erience concr\`ete de l'administration d'un serveur Linux dans le cloud, depuis le d\'eploiement jusqu'\`a la s\'ecurisation, en passant par la gestion des ressources syst\`eme.
-
-\textbf{Comp\'etences acquises :}
-\begin{itemize}
-  \item D\'eploiement d'une instance EC2 sur AWS avec configuration r\'eseau ad\'equate.
-  \item Installation et configuration de Webmin sur Ubuntu Server.
-  \item Administration graphique d'un serveur Linux (utilisateurs, services, fichiers, cron).
-  \item Mise en place d'une s\'ecurit\'e de base : pare-feu UFW, restriction SSH, HTTPS.
-\end{itemize}
-
-\textbf{Points importants \`a retenir :}
-\begin{itemize}
-  \item Webmin simplifie consid\'erablement l'administration syst\`eme, mais une bonne compr\'ehension des commandes Linux sous-jacentes reste indispensable pour diagnostiquer les probl\`emes.
-  \item La s\'ecurit\'e d'un serveur cloud n\'ecessite une approche multicouche : groupe de s\'ecurit\'e AWS, pare-feu syst\`eme (UFW), et configuration applicative (SSH, HTTPS).
-  \item La gestion des cl\'es SSH et des permissions de fichiers est cruciale pour \'eviter les \'echecs de connexion.
-\end{itemize}
-
-\textbf{Perspectives d'am\'elioration :}
-\begin{itemize}
-  \item Approfondir la configuration du serveur web Apache ou Nginx via Webmin.
-  \item Mettre en place un certificat SSL valide (Let's Encrypt) pour remplacer le certificat auto-sign\'e.
-  \item Configurer des r\`egles de firewall plus complexes et des alertes de monitoring.
-  \item Explorer les modules avanc\'es de Webmin (Samba, Bind DNS, etc.).
-\end{itemize}
-
-% ================================================================
 \end{document}
